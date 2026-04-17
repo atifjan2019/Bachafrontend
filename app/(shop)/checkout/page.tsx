@@ -55,6 +55,8 @@ export default function CheckoutPage() {
           variant_id: l.variant_id,
           quantity: l.quantity,
           unit_price: l.unit_price,
+          name: l.name,
+          size: l.size,
         })),
         payment_method: values.payment_method,
         notes: values.notes,

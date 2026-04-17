@@ -124,7 +124,7 @@ export type Order = {
 export type CheckoutPayload = {
   customer: Customer;
   shipping_address: ShippingAddress;
-  items: { product_id: number; variant_id: number; quantity: number; unit_price: number }[];
+  items: { product_id: number; variant_id: number; quantity: number; unit_price: number; name: string; size: string }[];
   payment_method: PaymentMethod;
   notes?: string;
 };
