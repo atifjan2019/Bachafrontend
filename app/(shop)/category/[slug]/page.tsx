@@ -7,11 +7,6 @@ import { GoldDivider } from "@/components/common/GoldDivider";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHero } from "@/components/common/PageHero";
 
-export async function generateStaticParams() {
-  const cats = await getCategories();
-  return cats.map((c) => ({ slug: c.slug }));
-}
-
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [category, res] = await Promise.all([
