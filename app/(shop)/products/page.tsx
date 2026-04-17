@@ -32,40 +32,54 @@ export default function ProductsPage() {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
     setLoading(true);
     async function run() {
-      if (selectedCats.length === 0) {
-        const res = await getProducts({
-          min_price: price[0],
-          max_price: price[1],
-          sort,
-          page,
-          per_page: 12,
-        });
-        setProducts(res.data);
-        setLastPage(res.meta.last_page);
-        setTotal(res.meta.total);
-      } else {
-        const all = await Promise.all(
-          selectedCats.map((c) =>
-            getProducts({
-              category: c,
-              min_price: price[0],
-              max_price: price[1],
-              sort,
-              page: 1,
-              per_page: 60,
-            })
-          )
-        );
-        const merged = all.flatMap((r) => r.data);
-        setProducts(merged);
-        setLastPage(1);
-        setTotal(merged.length);
+      try {
+        if (selectedCats.length === 0) {
+          const res = await getProducts({
+            min_price: price[0],
+            max_price: price[1],
+            sort,
+            page,
+            per_page: 12,
+          });
+          if (mounted) {
+            setProducts(res.data);
+            setLastPage(res.meta.last_page);
+            setTotal(res.meta.total);
+          }
+        } else {
+          const all = await Promise.all(
+            selectedCats.map((c) =>
+              getProducts({
+                category: c,
+                min_price: price[0],
+                max_price: price[1],
+                sort,
+                page: 1,
+                per_page: 60,
+              })
+            )
+          );
+          const merged = all.flatMap((r) => r.data);
+          if (mounted) {
+            setProducts(merged);
+            setLastPage(1);
+            setTotal(merged.length);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load products:", e);
+        if (mounted) setProducts([]);
+      } finally {
+        if (mounted) setLoading(false);
       }
-      setLoading(false);
     }
     run();
+    return () => {
+      mounted = false;
+    };
   }, [selectedCats, price, sort, page]);
 
   const filters = useMemo(
