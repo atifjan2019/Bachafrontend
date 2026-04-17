@@ -5,7 +5,7 @@ export const USE_MOCKS =
   (process.env.NEXT_PUBLIC_USE_MOCKS ?? "true").toString() === "true";
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1",
   timeout: 15000,
   headers: { Accept: "application/json" },
 });

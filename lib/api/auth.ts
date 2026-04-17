@@ -11,41 +11,25 @@ const MOCK_USER: User = {
 };
 
 export async function login(email: string, _password: string): Promise<AuthResponse> {
-  if (USE_MOCKS) {
-    await delay(300);
-    const token = "mock_token_" + Math.random().toString(36).slice(2);
-    const user = { ...MOCK_USER, email };
-    Cookies.set("bsf_token", token, { expires: 7, sameSite: "lax" });
-    if (typeof window !== "undefined") {
-      localStorage.setItem("bsf_user", JSON.stringify(user));
-    }
-    return { user, token };
-  }
-  const res = await apiClient.post<AuthResponse>("/auth/login", { email, password: _password });
-  Cookies.set("bsf_token", res.data.token, { expires: 7, sameSite: "lax" });
+  await delay(300);
+  const token = "mock_token_" + Math.random().toString(36).slice(2);
+  const user = { ...MOCK_USER, email };
+  Cookies.set("bsf_token", token, { expires: 7, sameSite: "lax" });
   if (typeof window !== "undefined") {
-    localStorage.setItem("bsf_user", JSON.stringify(res.data.user));
+    localStorage.setItem("bsf_user", JSON.stringify(user));
   }
-  return res.data;
+  return { user, token };
 }
 
 export async function register(name: string, email: string, password: string): Promise<AuthResponse> {
-  if (USE_MOCKS) {
-    await delay(350);
-    const token = "mock_token_" + Math.random().toString(36).slice(2);
-    const user = { ...MOCK_USER, name, email };
-    Cookies.set("bsf_token", token, { expires: 7, sameSite: "lax" });
-    if (typeof window !== "undefined") {
-      localStorage.setItem("bsf_user", JSON.stringify(user));
-    }
-    return { user, token };
-  }
-  const res = await apiClient.post<AuthResponse>("/auth/register", { name, email, password });
-  Cookies.set("bsf_token", res.data.token, { expires: 7, sameSite: "lax" });
+  await delay(350);
+  const token = "mock_token_" + Math.random().toString(36).slice(2);
+  const user = { ...MOCK_USER, name, email };
+  Cookies.set("bsf_token", token, { expires: 7, sameSite: "lax" });
   if (typeof window !== "undefined") {
-    localStorage.setItem("bsf_user", JSON.stringify(res.data.user));
+    localStorage.setItem("bsf_user", JSON.stringify(user));
   }
-  return res.data;
+  return { user, token };
 }
 
 export function logout() {
