@@ -21,6 +21,7 @@ export default async function HomePage() {
         subtitle="Soft, durable, and thoughtfully designed pieces for kids who live full days."
         variant="dark"
         align="center"
+        size="lg"
       />
 
       {/* Marquee strip */}

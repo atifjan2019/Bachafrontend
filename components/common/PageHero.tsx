@@ -1,9 +1,13 @@
+import Image from "next/image";
+
 interface PageHeroProps {
   eyebrow: string;
   title: string;
   subtitle?: string;
   variant?: "light" | "dark";
   align?: "left" | "center";
+  image?: string;
+  size?: "default" | "lg";
 }
 
 export function PageHero({
@@ -12,14 +16,40 @@ export function PageHero({
   subtitle,
   variant = "light",
   align = "left",
+  image,
+  size = "default",
 }: PageHeroProps) {
-  const isDark = variant === "dark";
+  const isDark = variant === "dark" || !!image;
+  const heightClass =
+    size === "lg" ? "h-[440px] lg:h-[520px]" : "h-[220px] lg:h-[260px]";
 
   return (
-    <section className={isDark ? "bg-brand-black text-white" : "bg-surface-soft"}>
+    <section className={`relative ${heightClass} overflow-hidden`}>
+      {/* Background */}
+      {image ? (
+        <>
+          <Image
+            src={image}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-black/55" />
+        </>
+      ) : (
+        <div
+          className={`absolute inset-0 ${
+            isDark ? "bg-brand-black" : "bg-surface-soft"
+          }`}
+        />
+      )}
+
+      {/* Content */}
       <div
-        className={`container-shop py-16 lg:py-20 ${
-          align === "center" ? "text-center max-w-4xl mx-auto" : "max-w-4xl"
+        className={`relative h-full flex flex-col justify-center container-shop ${
+          align === "center" ? "text-center items-center" : ""
         }`}
       >
         <span
@@ -30,7 +60,7 @@ export function PageHero({
           {eyebrow}
         </span>
         <h1
-          className={`mt-4 font-display text-4xl lg:text-5xl tracking-tightest leading-tight ${
+          className={`mt-3 font-display text-3xl lg:text-4xl tracking-tightest leading-tight ${
             isDark ? "text-white" : "text-brand-black"
           }`}
         >
@@ -38,7 +68,7 @@ export function PageHero({
         </h1>
         {subtitle && (
           <p
-            className={`mt-4 text-base lg:text-lg max-w-2xl leading-relaxed ${
+            className={`mt-2 text-sm lg:text-base max-w-xl leading-relaxed ${
               align === "center" ? "mx-auto" : ""
             } ${isDark ? "text-white/70" : "text-ink-50"}`}
           >

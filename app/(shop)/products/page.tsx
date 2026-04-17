@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/common/LoadingSkeleton";
 import { EmptyState } from "@/components/common/EmptyState";
+import { PageHero } from "@/components/common/PageHero";
 import type { Category, Product } from "@/types";
 
 export default function ProductsPage() {
@@ -89,25 +90,13 @@ export default function ProductsPage() {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="bg-surface-soft">
-        <div className="container-shop py-16 lg:py-20">
-          <span className="inline-block text-[11px] uppercase tracking-[0.22em] text-ink-50 font-medium">
-            Shop
-          </span>
-          <h1 className="mt-4 font-display text-4xl lg:text-5xl text-brand-black tracking-tightest">
-            All Products
-          </h1>
-          <p className="mt-4 text-base text-ink-50">
-            {total} {total === 1 ? "piece" : "pieces"} stitched with care
-          </p>
-          {/* Breadcrumb */}
-          <div className="mt-6 text-sm text-ink-50">
-            <Link href="/" className="hover:text-brand-black">Home</Link>
-            <span className="mx-2">/</span>
-            <span className="text-brand-black">Shop</span>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Shop"
+        title="All Products"
+        subtitle={`${total} ${total === 1 ? "piece" : "pieces"} stitched with care`}
+        variant="dark"
+        align="center"
+      />
 
       {/* Toolbar */}
       <div className="sticky top-14 z-30 bg-white border-b border-ink-10">

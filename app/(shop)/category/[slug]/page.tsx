@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCategory, getCategories } from "@/lib/api/categories";
@@ -6,6 +5,7 @@ import { getProducts } from "@/lib/api/products";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { GoldDivider } from "@/components/common/GoldDivider";
 import { EmptyState } from "@/components/common/EmptyState";
+import { PageHero } from "@/components/common/PageHero";
 
 export async function generateStaticParams() {
   const cats = await getCategories();
@@ -22,21 +22,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   return (
     <div>
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <Image src={category.image} alt={category.name} fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-black/50" />
-        </div>
-        <div className="relative container-shop py-16 lg:py-20 text-center">
-          <span className="inline-block text-[11px] uppercase tracking-[0.22em] text-white/60 font-medium">
-            Shop by category
-          </span>
-          <h1 className="mt-4 font-display text-4xl lg:text-5xl text-white tracking-tightest">{category.name}</h1>
-          <p className="mt-4 text-base text-white/70">
-            {res.meta.total} pieces curated for {category.name.toLowerCase()}
-          </p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Shop by category"
+        title={category.name}
+        subtitle={`${res.meta.total} pieces curated for ${category.name.toLowerCase()}`}
+        image={category.image}
+        align="center"
+      />
 
       <div className="container-shop py-10 lg:py-14">
         <div className="text-sm text-muted mb-6">
