@@ -28,7 +28,9 @@ export function CategoryFilter({
             onChange={() => toggle(c.slug)}
           />
           <span className="flex-1">{c.name}</span>
-          <span className="text-xs text-muted">{c.product_count}</span>
+          {c.product_count > 0 && (
+            <span className="text-xs text-muted">{c.product_count}</span>
+          )}
         </label>
       ))}
     </div>
