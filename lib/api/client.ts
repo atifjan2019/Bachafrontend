@@ -1,8 +1,10 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
+const isVercelLocalFallback = !!process.env.VERCEL && (process.env.NEXT_PUBLIC_API_URL?.includes("127.0.0.1") || process.env.NEXT_PUBLIC_API_URL?.includes("localhost"));
+
 export const USE_MOCKS =
-  (process.env.NEXT_PUBLIC_USE_MOCKS ?? "true").toString() === "true";
+  isVercelLocalFallback || (process.env.NEXT_PUBLIC_USE_MOCKS ?? "true").toString() === "true";
 
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1",
