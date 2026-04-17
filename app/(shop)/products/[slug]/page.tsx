@@ -34,7 +34,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <Accordion type="single" collapsible defaultValue="desc">
               <AccordionItem value="desc">
                 <AccordionTrigger>Full Description</AccordionTrigger>
-                <AccordionContent>{product.description}</AccordionContent>
+                <AccordionContent><div dangerouslySetInnerHTML={{ __html: product.description }} className="prose prose-sm max-w-none" /></AccordionContent>
               </AccordionItem>
               <AccordionItem value="size">
                 <AccordionTrigger>Size Guide</AccordionTrigger>

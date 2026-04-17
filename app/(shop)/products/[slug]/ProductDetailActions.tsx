@@ -64,7 +64,7 @@ export function ProductDetailActions({ product }: { product: Product }) {
           <Badge tone="red">Save {formatPKR(product.price - (product.sale_price as number))}</Badge>
         )}
       </div>
-      <p className="mt-4 text-sm text-muted max-w-md">{product.description.slice(0, 140)}&hellip;</p>
+      <p className="mt-4 text-sm text-muted max-w-md">{product.description.replace(/<[^>]*>/g, '').slice(0, 140)}&hellip;</p>
 
       <div className="h-px bg-border my-6" />
 
