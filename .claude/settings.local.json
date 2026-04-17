@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx --no-install tsc --noEmit)",
+      "Bash(npx --no-install next lint)",
+      "Bash(npx --no-install next build)",
+      "Bash(npm install *)"
+    ]
+  }
+}
