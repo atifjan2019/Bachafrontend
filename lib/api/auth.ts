@@ -1,34 +1,20 @@
-import { apiClient, USE_MOCKS, delay } from "./client";
-import type { AuthResponse, User } from "@/types";
+import { apiClient } from "./client";
+import type { User } from "@/types";
 import Cookies from "js-cookie";
 
-const MOCK_USER: User = {
-  id: 1,
-  name: "Ayesha Khan",
-  email: "ayesha@example.com",
-  phone: "03331234567",
-  address: "House 14, Street 8, DHA Phase 5, Karachi",
-};
+export type AuthApiResponse = { data: { user: User; token: string } };
 
-export async function login(email: string, _password: string): Promise<AuthResponse> {
-  await delay(300);
-  const token = "mock_token_" + Math.random().toString(36).slice(2);
-  const user = { ...MOCK_USER, email };
-  Cookies.set("bsf_token", token, { expires: 7, sameSite: "lax" });
-  if (typeof window !== "undefined") {
-    localStorage.setItem("bsf_user", JSON.stringify(user));
-  }
+export async function login(email: string, password: string) {
+  const res = await apiClient.post<AuthApiResponse>("/auth/login", { email, password });
+  const { user, token } = res.data.data;
+  _persist(user, token);
   return { user, token };
 }
 
-export async function register(name: string, email: string, password: string): Promise<AuthResponse> {
-  await delay(350);
-  const token = "mock_token_" + Math.random().toString(36).slice(2);
-  const user = { ...MOCK_USER, name, email };
-  Cookies.set("bsf_token", token, { expires: 7, sameSite: "lax" });
-  if (typeof window !== "undefined") {
-    localStorage.setItem("bsf_user", JSON.stringify(user));
-  }
+export async function register(name: string, email: string, password: string) {
+  const res = await apiClient.post<AuthApiResponse>("/auth/register", { name, email, password });
+  const { user, token } = res.data.data;
+  _persist(user, token);
   return { user, token };
 }
 
@@ -36,6 +22,7 @@ export function logout() {
   Cookies.remove("bsf_token");
   if (typeof window !== "undefined") {
     localStorage.removeItem("bsf_user");
+    delete apiClient.defaults.headers.common["Authorization"];
   }
 }
 
@@ -51,15 +38,19 @@ export function getStoredUser(): User | null {
 }
 
 export async function updateProfile(patch: Partial<User>): Promise<User> {
-  if (USE_MOCKS) {
-    await delay(200);
-    const current = getStoredUser() ?? MOCK_USER;
-    const updated = { ...current, ...patch };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("bsf_user", JSON.stringify(updated));
-    }
-    return updated;
-  }
   const res = await apiClient.patch<{ data: User }>("/account/profile", patch);
-  return res.data.data;
+  const user = res.data.data;
+  if (typeof window !== "undefined") {
+    localStorage.setItem("bsf_user", JSON.stringify(user));
+  }
+  return user;
 }
+
+function _persist(user: User, token: string) {
+  Cookies.set("bsf_token", token, { expires: 7, sameSite: "lax" });
+  if (typeof window !== "undefined") {
+    localStorage.setItem("bsf_user", JSON.stringify(user));
+    apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  }
+}
+

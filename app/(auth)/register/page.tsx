@@ -28,8 +28,12 @@ export default function RegisterPage() {
       setUser(user);
       show({ title: "Account created", description: `Welcome, ${user.name}`, tone: "success" });
       router.push("/account");
-    } catch {
-      show({ title: "Could not register", description: "Please try again", tone: "error" });
+    } catch (err: any) {
+      const msg = err?.response?.data?.message
+        || (err?.response?.data?.errors
+          ? Object.values(err.response.data.errors).flat().join(". ")
+          : "Please try again");
+      show({ title: "Could not register", description: msg, tone: "error" });
     } finally {
       setSubmitting(false);
     }

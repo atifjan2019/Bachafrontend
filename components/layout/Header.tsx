@@ -16,7 +16,7 @@ const NAV = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function Header() {
+export function Header({ logoUrl }: { logoUrl?: string }) {
   const openCart = useCart((s) => s.openCart);
   const itemCount = useCart((s) => s.itemCount());
   const user = useAuth((s) => s.user);
@@ -38,7 +38,7 @@ export function Header() {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <BrandMark size="default" />
+          <BrandMark size="default" logoUrl={logoUrl} />
         </div>
 
         <nav className="hidden lg:flex items-center gap-8 text-sm">

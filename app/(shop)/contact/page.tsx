@@ -3,13 +3,18 @@ import Link from "next/link";
 import { Mail, Phone, MapPin, MessageCircle, Clock, ArrowRight } from "lucide-react";
 import { ContactForm } from "./ContactForm";
 import { PageHero } from "@/components/common/PageHero";
+import { getSettings, type Settings } from "@/lib/api/settings";
+
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Contact — Bacha Stylo",
   description: "Get in touch with the Bacha Stylo team. We're here to help.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getSettings().catch((): Settings => ({} as Settings));
+
   return (
     <div className="flex flex-col">
       <PageHero
@@ -26,25 +31,28 @@ export default function ContactPage() {
           <ContactCard
             icon={<Mail className="h-5 w-5" />}
             title="Email us"
-            info="hello@bachastylo.pk"
+            info={settings.business_email || "hello@bachastylo.pk"}
             sub="For general enquiries"
+            href={`mailto:${settings.business_email || "hello@bachastylo.pk"}`}
           />
           <ContactCard
             icon={<MessageCircle className="h-5 w-5" />}
             title="WhatsApp"
-            info="+92 300 1234 567"
+            info={settings.whatsapp_number || "+92 300 1234 567"}
             sub="Fastest way to reach us"
+            href={`https://wa.me/${(settings.whatsapp_number || "923001234567").replace(/[^0-9]/g, '')}`}
           />
           <ContactCard
             icon={<Phone className="h-5 w-5" />}
             title="Call us"
-            info="+92 300 1234 567"
+            info={settings.business_phone || "+92 300 1234 567"}
             sub="Mon–Sat, 10 am – 7 pm"
+            href={`tel:${(settings.business_phone || "+923001234567").replace(/[^0-9+]/g, '')}`}
           />
           <ContactCard
             icon={<MapPin className="h-5 w-5" />}
             title="Visit us"
-            info="Gulberg III, Lahore"
+            info={settings.business_address || "Gulberg III, Lahore"}
             sub="By appointment only"
           />
         </div>
@@ -131,14 +139,16 @@ function ContactCard({
   title,
   info,
   sub,
+  href,
 }: {
   icon: React.ReactNode;
   title: string;
   info: string;
   sub: string;
+  href?: string;
 }) {
-  return (
-    <div className="rounded-xl border border-ink-10 bg-white p-6 shadow-sm">
+  const content = (
+    <div className={`rounded-xl border border-ink-10 bg-white p-6 shadow-sm h-full ${href ? 'hover:border-ink-30 transition-colors' : ''}`}>
       <div className="h-10 w-10 rounded-full bg-surface-soft flex items-center justify-center text-brand-black mb-4">
         {icon}
       </div>
@@ -147,6 +157,12 @@ function ContactCard({
       <p className="mt-0.5 text-xs text-ink-50">{sub}</p>
     </div>
   );
+
+  return href ? (
+    <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className="block h-full">
+      {content}
+    </a>
+  ) : content;
 }
 
 function Faq({ q, a }: { q: string; a: string }) {

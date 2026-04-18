@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getOrder } from "@/lib/api/orders";
 import { useAuth } from "@/lib/store/auth";
+import { useCart } from "@/lib/store/cart";
 import { GoldDivider } from "@/components/common/GoldDivider";
 import { Skeleton } from "@/components/common/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,8 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const user = useAuth((s) => s.user);
   const hydrated = useAuth((s) => s.hydrated);
+  const addItem = useCart((s) => s.addItem);
+  const openCart = useCart((s) => s.openCart);
   const [order, setOrder] = useState<Order | null | undefined>(undefined);
 
   useEffect(() => {
@@ -61,12 +64,30 @@ export default function OrderDetailPage() {
 
   const active = statusIndex(order.status);
 
+  const handleReorder = () => {
+    order.items.forEach((item) => {
+      addItem({
+        product_id: item.product_id || 0,
+        variant_id: undefined,
+        name: item.name,
+        price: item.unit_price,
+        image: item.image || "/images/BachaStylo%20favicon.png",
+        size: item.size,
+        color: item.color,
+      }, item.quantity);
+    });
+    router.push("/checkout");
+  };
+
   return (
     <div className="container-shop py-10 lg:py-14">
-      <div className="mb-8">
-        <GoldDivider className="mb-3 mx-0" />
-        <h1 className="font-display text-3xl sm:text-4xl">Order {order.id}</h1>
-        <p className="text-sm text-muted mt-1">Placed on {formatDate(order.placed_at)}</p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <GoldDivider className="mb-3 mx-0" />
+          <h1 className="font-display text-3xl sm:text-4xl">Order {order.id}</h1>
+          <p className="text-sm text-muted mt-1">Placed on {formatDate(order.placed_at)}</p>
+        </div>
+        <Button onClick={handleReorder}>Reorder items</Button>
       </div>
 
       {order.status !== "cancelled" && (

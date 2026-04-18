@@ -4,10 +4,10 @@ import { SectionHeading } from "@/components/common/SectionHeading";
 import { ProductCard } from "@/components/product/ProductCard";
 import { getCategories } from "@/lib/api/categories";
 import { getFeatured } from "@/lib/api/products";
-import { Truck, ShieldCheck, RefreshCw, Sparkles, ArrowRight } from "lucide-react";
+import { Truck, ShieldCheck, RefreshCw, Sparkles, ArrowRight, Leaf, Scissors, Heart } from "lucide-react";
 import { PageHero } from "@/components/common/PageHero";
 
-export const revalidate = 300;
+export const revalidate = 0;
 
 export default async function HomePage() {
   const [categories, featured] = await Promise.all([getCategories(), getFeatured(8)]);
@@ -122,61 +122,80 @@ export default async function HomePage() {
               className="object-cover"
             />
           </div>
-          <div className="order-1 lg:order-2">
-            <span className="eyebrow">Designed in Pakistan</span>
-            <h2 className="mt-4 font-display text-4xl lg:text-5xl text-brand-black tracking-tightest leading-[1.02]">
+          <div className="order-1 lg:order-2 flex flex-col justify-center text-left items-start">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-soft border border-ink-10 w-fit mb-6">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-black opacity-40"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-black"></span>
+              </span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-brand-black">Designed in Pakistan</span>
+            </div>
+
+            <h2 className="font-display text-4xl lg:text-5xl text-brand-black tracking-tightest leading-[1.02] mb-6">
               Small batch.
               <br />
-              Built to last.
+              <span className="text-ink-50">Built to last.</span>
             </h2>
-            <p className="mt-6 text-base text-ink-50 leading-relaxed max-w-lg">
+
+            <p className="text-base lg:text-lg text-ink-70 leading-relaxed max-w-lg mb-8">
               We work with a tight circle of local makers to produce in small runs. That means better
               quality control, less waste, and pieces that hold up through everything kids throw at them.
             </p>
-            <ul className="mt-8 space-y-3 text-sm text-ink-70">
-              <li className="flex gap-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-black mt-2 shrink-0" />
-                Soft, pre-washed cottons and breathable fabrics
-              </li>
-              <li className="flex gap-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-black mt-2 shrink-0" />
-                Reinforced seams and generous fit for growing bodies
-              </li>
-              <li className="flex gap-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-black mt-2 shrink-0" />
-                OEKO-TEX certified dyes, safe on sensitive skin
-              </li>
-            </ul>
-            <Link href="/about" className="btn-outline mt-10">
-              Learn more
-            </Link>
+
+            <div className="grid gap-3 mb-10 w-full">
+              {[
+                { icon: Leaf, title: 'Premium Fabrics', desc: 'Soft, pre-washed cottons and breathable materials.' },
+                { icon: Scissors, title: 'Smart Tailoring', desc: 'Reinforced seams and generous fit for growing bodies.' },
+                { icon: Heart, title: 'Safe & Gentle', desc: 'OEKO-TEX certified dyes, safe on sensitive skin.' }
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-4 p-4 rounded-xl border border-transparent hover:border-ink-10 hover:bg-surface-soft transition-all duration-300 group">
+                  <div className="h-12 w-12 rounded-full bg-surface-sunken flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                    <item.icon className="h-5 w-5 text-brand-black" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-brand-black mb-1">{item.title}</h4>
+                    <p className="text-sm text-ink-50 leading-relaxed max-w-sm">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <Link href="/about" className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium transition-all duration-300 bg-brand-black text-white hover:bg-black hover:shadow-md hover:-translate-y-0.5 rounded-full group">
+                Discover our process
+                <ArrowRight className="inline-block ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Value props */}
-      <section className="py-16 border-t border-ink-10">
-        <div className="container-shop grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
-          <ValueProp
-            title="Free shipping"
-            sub="On orders over Rs. 5,000"
-            icon={<Truck className="h-5 w-5" />}
-          />
-          <ValueProp
-            title="Easy returns"
-            sub="14 days, no questions asked"
-            icon={<RefreshCw className="h-5 w-5" />}
-          />
-          <ValueProp
-            title="Secure checkout"
-            sub="COD, JazzCash & Easypaisa"
-            icon={<ShieldCheck className="h-5 w-5" />}
-          />
-          <ValueProp
-            title="New arrivals weekly"
-            sub="Fresh styles every Thursday"
-            icon={<Sparkles className="h-5 w-5" />}
-          />
+      <section className="py-12 lg:py-16 border-t border-ink-10 relative bg-surface-soft overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
+        <div className="container-shop relative z-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+            <ValueProp
+              title="Free shipping"
+              sub="On orders over Rs. 5,000"
+              icon={<Truck className="h-5 w-5 transition-transform group-hover:scale-110 duration-500" />}
+            />
+            <ValueProp
+              title="Easy returns"
+              sub="14 days, no questions asked"
+              icon={<RefreshCw className="h-5 w-5 transition-transform group-hover:scale-110 duration-500" />}
+            />
+            <ValueProp
+              title="Secure checkout"
+              sub="COD, JazzCash & Easypaisa"
+              icon={<ShieldCheck className="h-5 w-5 transition-transform group-hover:scale-110 duration-500" />}
+            />
+            <ValueProp
+              title="New arrivals weekly"
+              sub="Fresh styles every Thursday"
+              icon={<Sparkles className="h-5 w-5 transition-transform group-hover:scale-110 duration-500" />}
+            />
+          </div>
         </div>
       </section>
     </div>
@@ -193,14 +212,12 @@ function ValueProp({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-4">
-      <div className="h-10 w-10 rounded-full bg-surface-soft flex items-center justify-center text-brand-black shrink-0">
+    <div className="group flex flex-col items-start text-left p-5 rounded-2xl border border-ink-10 bg-white hover:bg-brand-black hover:-translate-y-1 transition-all duration-500 hover:shadow-lg hover:border-transparent">
+      <div className="h-10 w-10 rounded-xl bg-surface-soft text-brand-black flex items-center justify-center mb-4 group-hover:bg-white/10 group-hover:text-white group-hover:-rotate-6 transition-all duration-500">
         {icon}
       </div>
-      <div>
-        <p className="text-sm font-medium text-brand-black">{title}</p>
-        <p className="text-xs text-ink-50 mt-0.5">{sub}</p>
-      </div>
+      <h3 className="text-sm font-semibold text-brand-black group-hover:text-white transition-colors duration-500 mb-1">{title}</h3>
+      <p className="text-xs text-ink-50 group-hover:text-ink-10 transition-colors duration-500 leading-relaxed max-w-[160px] lg:max-w-none">{sub}</p>
     </div>
   );
 }

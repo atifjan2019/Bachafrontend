@@ -4,13 +4,15 @@ import Image from "next/image";
 interface BrandMarkProps {
   variant?: "light" | "dark";
   size?: "default" | "lg" | "xl";
+  logoUrl?: string;
 }
 
-export function BrandMark({ variant = "light", size = "default" }: BrandMarkProps) {
+export function BrandMark({ variant = "light", size = "default", logoUrl }: BrandMarkProps) {
   const src =
-    variant === "dark"
+    logoUrl ||
+    (variant === "dark"
       ? "/images/BachaStylo%20White%20Logo%20for%20web.png"
-      : "/images/BachaStylo%20Logo%20for%20web.png";
+      : "/images/BachaStylo%20Logo%20for%20web.png");
 
   const maxH = {
     default: "max-h-10",

@@ -9,6 +9,7 @@ type CartState = {
   openCart: () => void;
   closeCart: () => void;
   addLine: (line: CartLine) => void;
+  addItem: (item: { product_id: number; variant_id?: number; name: string; price: number; image: string; size?: string; color?: string }, qty?: number) => void;
   removeLine: (id: string) => void;
   updateQty: (id: string, qty: number) => void;
   clear: () => void;
@@ -38,6 +39,23 @@ export const useCart = create<CartState>()(
         } else {
           set({ lines: [...get().lines, line] });
         }
+      },
+      addItem: (item, qty = 1) => {
+        const line: CartLine = {
+          id: `${item.product_id}-${item.variant_id ?? 0}-${item.size ?? ""}-${item.color ?? ""}`,
+          product_id: item.product_id,
+          variant_id: item.variant_id ?? 0,
+          slug: "",
+          name: item.name,
+          image: item.image,
+          size: item.size ?? "",
+          color: item.color ?? "",
+          color_hex: "",
+          unit_price: item.price,
+          quantity: qty,
+          max_stock: 999,
+        };
+        get().addLine(line);
       },
       removeLine: (id) => set({ lines: get().lines.filter((l) => l.id !== id) }),
       updateQty: (id, qty) =>

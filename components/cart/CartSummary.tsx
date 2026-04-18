@@ -1,10 +1,24 @@
 "use client";
+import { useEffect, useState } from "react";
 import { formatPKR } from "@/lib/utils/format";
 import { useCart } from "@/lib/store/cart";
+import { getSettings } from "@/lib/api/settings";
 
 export function CartSummary({ includeShipping = false }: { includeShipping?: boolean }) {
   const subtotal = useCart((s) => s.subtotal());
-  const shipping = subtotal === 0 ? 0 : subtotal >= 5000 ? 0 : 250;
+  const [fee, setFee] = useState(250);
+  const [threshold, setThreshold] = useState(5000);
+
+  useEffect(() => {
+    getSettings()
+      .then((s) => {
+        if (s.shipping_fee) setFee(Number(s.shipping_fee));
+        if (s.free_shipping_threshold) setThreshold(Number(s.free_shipping_threshold));
+      })
+      .catch(() => {});
+  }, []);
+
+  const shipping = subtotal === 0 ? 0 : subtotal >= threshold ? 0 : fee;
   const total = includeShipping ? subtotal + shipping : subtotal;
 
   return (
@@ -24,9 +38,9 @@ export function CartSummary({ includeShipping = false }: { includeShipping?: boo
         <span className="font-display text-base">Total</span>
         <span className="font-display text-lg">{formatPKR(total)}</span>
       </div>
-      {subtotal > 0 && subtotal < 5000 && (
+      {subtotal > 0 && subtotal < threshold && (
         <p className="text-xs text-muted pt-1">
-          Add {formatPKR(5000 - subtotal)} more for free shipping.
+          Add {formatPKR(threshold - subtotal)} more for free shipping.
         </p>
       )}
     </div>

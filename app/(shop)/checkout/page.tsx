@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { checkoutSchema, type CheckoutInput } from "@/lib/validators/schemas";
 import { Input, Textarea } from "@/components/ui/input";
 import { Label, FieldError } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { GoldDivider } from "@/components/common/GoldDivider";
 import { PaymentMethodRadio } from "@/components/checkout/PaymentMethodRadio";
 import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
 import { useCart } from "@/lib/store/cart";
+import { useAuth } from "@/lib/store/auth";
 import { placeOrder } from "@/lib/api/orders";
 import { EmptyCart } from "@/components/cart/EmptyCart";
 import { useToast } from "@/components/ui/toast";
@@ -23,6 +24,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const lines = useCart((s) => s.lines);
   const clear = useCart((s) => s.clear);
+  const user = useAuth((s) => s.user);
   const { show } = useToast();
   const [submitting, setSubmitting] = useState(false);
 
@@ -30,6 +32,16 @@ export default function CheckoutPage() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: { payment_method: "cod", city: "Karachi", province: "Sindh" },
   });
+
+  // Auto-fill form with logged-in user's info
+  useEffect(() => {
+    if (user) {
+      if (user.name) form.setValue("name", user.name);
+      if (user.email) form.setValue("email", user.email);
+      if (user.phone) form.setValue("phone", user.phone);
+      if (user.address) form.setValue("full_address", user.address);
+    }
+  }, [user, form]);
 
   if (lines.length === 0) {
     return (

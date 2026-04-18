@@ -21,29 +21,37 @@ const playfair = Playfair_Display({
   weight: ["500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Bacha Stylo Fashion Home | Modern Kids' Wear in Pakistan",
-    template: "%s | Bacha Stylo Fashion Home",
-  },
-  description:
-    "Modern kids' clothing, thoughtfully designed in Pakistan. Nationwide shipping, Cash on Delivery, JazzCash and Easypaisa supported.",
-  metadataBase: new URL("https://bachastylo.pk"),
-  icons: {
-    icon: "/images/BachaStylo%20favicon.png",
-    shortcut: "/images/BachaStylo%20favicon.png",
-    apple: "/images/BachaStylo%20favicon.png",
-  },
-};
+export const revalidate = 0;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { getSettings, type Settings } from "@/lib/api/settings";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings().catch((): Settings => ({} as Settings));
+  return {
+    title: {
+      default: settings.meta_title || "Bacha Stylo Fashion Home | Modern Kids' Wear in Pakistan",
+      template: `%s | ${settings.business_name || 'Bacha Stylo Fashion Home'}`,
+    },
+    description: settings.meta_description || "Modern kids' clothing, thoughtfully designed in Pakistan. Nationwide shipping, Cash on Delivery, JazzCash and Easypaisa supported.",
+    metadataBase: new URL(settings.canonical_base_url || "https://bachastylo.pk"),
+    icons: {
+      icon: settings.favicon_url || "/images/BachaStylo%20favicon.png",
+      shortcut: settings.favicon_url || "/images/BachaStylo%20favicon.png",
+      apple: settings.favicon_url || "/images/BachaStylo%20favicon.png",
+    },
+  };
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSettings().catch((): Settings => ({} as Settings));
+
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen flex flex-col">
         <ToastProvider>
           <AuthHydrator />
-          <AnnouncementBar />
-          <Header />
+          <AnnouncementBar threshold={settings?.free_shipping_threshold} />
+          <Header logoUrl={settings?.logo_url} />
           <main className="flex-1">{children}</main>
           <Footer />
           <MobileNav />

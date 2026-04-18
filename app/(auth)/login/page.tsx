@@ -28,8 +28,9 @@ export default function LoginPage() {
       setUser(user);
       show({ title: "Welcome back", description: user.name, tone: "success" });
       router.push("/account");
-    } catch {
-      show({ title: "Login failed", description: "Check your email and password", tone: "error" });
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Check your email and password";
+      show({ title: "Login failed", description: msg, tone: "error" });
     } finally {
       setSubmitting(false);
     }

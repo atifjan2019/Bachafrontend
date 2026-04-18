@@ -8,7 +8,7 @@ export const USE_MOCKS =
 
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "https://admin.bachastylo.com/api/v1",
-  timeout: 15000,
+  timeout: 30000,
   headers: { Accept: "application/json" },
 });
 

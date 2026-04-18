@@ -2,24 +2,24 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils/cn";
 
-const MESSAGES = [
-  "Free shipping on orders over Rs. 5,000",
-  "Nationwide delivery in 2 to 5 working days",
-  "Cash on Delivery, JazzCash and Easypaisa accepted",
-];
-
-export function AnnouncementBar() {
+export function AnnouncementBar({ threshold }: { threshold?: string | number }) {
+  const formattedThreshold = threshold ? Number(threshold).toLocaleString() : "5,000";
+  const messages = [
+    `Free shipping on orders over Rs. ${formattedThreshold}`,
+    "Nationwide delivery in 2 to 5 working days",
+    "Cash on Delivery, JazzCash and Easypaisa accepted",
+  ];
   const [i, setI] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setI((x) => (x + 1) % MESSAGES.length), 3500);
+    const t = setInterval(() => setI((x) => (x + 1) % messages.length), 3500);
     return () => clearInterval(t);
-  }, []);
+  }, [messages.length]);
 
   return (
     <div className="bg-brand-black text-white text-xs">
       <div className="container-shop relative flex items-center justify-center py-2 h-8 overflow-hidden">
-        {MESSAGES.map((m, idx) => (
+        {messages.map((m, idx) => (
           <span
             key={m}
             className={cn(
