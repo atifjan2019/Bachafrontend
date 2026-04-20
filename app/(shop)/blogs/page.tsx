@@ -10,6 +10,19 @@ export const metadata: Metadata = {
     "Style tips, parenting hacks, and behind-the-scenes stories from Bacha Stylo.",
 };
 
+import { getBlogPosts, BlogPost as ApiBlogPost } from "@/lib/api/blogs";
+
+function stripHtml(html: string) {
+  return html.replace(/<[^>]*>?/gm, '');
+}
+
+function calculateReadTime(text: string) {
+  const wordsPerMinute = 200;
+  const words = text.split(/\s+/).length;
+  const minutes = Math.ceil(words / wordsPerMinute);
+  return `${minutes} min read`;
+}
+
 type BlogPost = {
   slug: string;
   title: string;
@@ -20,76 +33,24 @@ type BlogPost = {
   readTime: string;
 };
 
-const POSTS: BlogPost[] = [
-  {
-    slug: "how-to-pick-the-right-size",
-    title: "How to Pick the Right Size for Growing Kids",
-    excerpt:
-      "A practical guide to measuring your child and choosing sizes that last more than one season.",
-    image:
-      "https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=800&auto=format&fit=crop&q=70",
-    date: "Apr 10, 2026",
-    category: "Style Guide",
-    readTime: "4 min read",
-  },
-  {
-    slug: "summer-wardrobe-essentials",
-    title: "5 Summer Wardrobe Essentials Every Kid Needs",
-    excerpt:
-      "From breathable cottons to lightweight layers — the building blocks of a heat-proof wardrobe.",
-    image:
-      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&auto=format&fit=crop&q=70",
-    date: "Mar 28, 2026",
-    category: "Seasonal",
-    readTime: "3 min read",
-  },
-  {
-    slug: "behind-the-stitch",
-    title: "Behind the Stitch: How We Make Our Clothes",
-    excerpt:
-      "A look inside our Lahore studio — from fabric sourcing to final quality check.",
-    image:
-      "https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?w=800&auto=format&fit=crop&q=70",
-    date: "Mar 15, 2026",
-    category: "Behind the Scenes",
-    readTime: "5 min read",
-  },
-  {
-    slug: "mixing-and-matching-kids-outfits",
-    title: "Mix & Match: Building Outfits from 5 Basics",
-    excerpt:
-      "How to create a week's worth of looks with just five versatile pieces from our collection.",
-    image:
-      "https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=800&auto=format&fit=crop&q=70",
-    date: "Feb 22, 2026",
-    category: "Style Guide",
-    readTime: "3 min read",
-  },
-  {
-    slug: "caring-for-kids-clothes",
-    title: "How to Make Kids' Clothes Last Longer",
-    excerpt:
-      "Simple washing and storage tips to keep colours bright and fabrics soft — even after dozens of wears.",
-    image:
-      "https://images.unsplash.com/photo-1604467707321-70d009801bf9?w=800&auto=format&fit=crop&q=70",
-    date: "Feb 10, 2026",
-    category: "Care Tips",
-    readTime: "4 min read",
-  },
-  {
-    slug: "festive-dressing-guide",
-    title: "Eid Dressing: Comfort Meets Celebration",
-    excerpt:
-      "Special-occasion outfits that let kids be kids — festive enough for family gatherings, comfy enough to play in.",
-    image:
-      "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=800&auto=format&fit=crop&q=70",
-    date: "Jan 30, 2026",
-    category: "Seasonal",
-    readTime: "3 min read",
-  },
-];
+export default async function BlogsPage() {
+  const { data: realPosts } = await getBlogPosts({ per_page: 50 });
 
-export default function BlogsPage() {
+  const POSTS: BlogPost[] = realPosts.map((post: ApiBlogPost) => {
+    const rawText = post.content ? stripHtml(post.content) : "No content available.";
+    const excerpt = rawText.length > 120 ? rawText.substring(0, 120) + "..." : rawText;
+    
+    return {
+      slug: post.slug,
+      title: post.title,
+      excerpt,
+      image: post.image || "https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=800&auto=format&fit=crop&q=70",
+      date: new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      category: "News",
+      readTime: calculateReadTime(rawText),
+    };
+  });
+
   const [featured, ...rest] = POSTS;
 
   return (
@@ -103,37 +64,44 @@ export default function BlogsPage() {
       />
 
       {/* Featured post */}
-      <section className="container-shop py-16 lg:py-20">
-        <Link href={`/blogs/${featured.slug}`} className="group grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-surface-sunken">
-            <Image
-              src={featured.image}
-              alt={featured.title}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition duration-700 group-hover:scale-[1.03]"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="inline-block rounded-full bg-surface-soft px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-ink-50 font-medium">
-                {featured.category}
-              </span>
-              <span className="text-xs text-ink-50">{featured.date}</span>
+      {featured ? (
+        <section className="container-shop py-16 lg:py-20">
+          <Link href={`/blogs/${featured.slug}`} className="group grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-surface-sunken">
+              <Image
+                src={featured.image}
+                alt={featured.title}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover transition duration-700 group-hover:scale-[1.03]"
+              />
             </div>
-            <h2 className="font-display text-3xl lg:text-4xl text-brand-black tracking-tightest leading-tight group-hover:text-ink-70 transition-colors">
-              {featured.title}
-            </h2>
-            <p className="mt-4 text-base text-ink-50 leading-relaxed max-w-lg">
-              {featured.excerpt}
-            </p>
-            <span className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-brand-black group-hover:gap-2 transition-all">
-              Read article <ArrowRight className="h-4 w-4" />
-            </span>
-          </div>
-        </Link>
-      </section>
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="inline-block rounded-full bg-surface-soft px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-ink-50 font-medium">
+                  {featured.category}
+                </span>
+                <span className="text-xs text-ink-50">{featured.date}</span>
+              </div>
+              <h2 className="font-display text-3xl lg:text-4xl text-brand-black tracking-tightest leading-tight group-hover:text-ink-70 transition-colors">
+                {featured.title}
+              </h2>
+              <p className="mt-4 text-base text-ink-50 leading-relaxed max-w-lg">
+                {featured.excerpt}
+              </p>
+              <span className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-brand-black group-hover:gap-2 transition-all">
+                Read article <ArrowRight className="h-4 w-4" />
+              </span>
+            </div>
+          </Link>
+        </section>
+      ) : (
+        <div className="container-shop py-16 lg:py-20 text-center">
+            <h2 className="text-2xl font-display text-brand-black">No posts published yet.</h2>
+            <p className="text-ink-50 mt-2">Check back later for updates!</p>
+        </div>
+      )}
 
       {/* All posts grid */}
       <section className="bg-surface-soft">
