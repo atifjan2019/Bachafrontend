@@ -4,6 +4,7 @@ export type Category = {
   name: string;
   image: string;
   product_count: number;
+  children?: Category[];
 };
 
 export type Variant = {

@@ -24,6 +24,7 @@ const playfair = Playfair_Display({
 export const revalidate = 0;
 
 import { getSettings, type Settings } from "@/lib/api/settings";
+import { getCategories } from "@/lib/api/categories";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings().catch((): Settings => ({} as Settings));
@@ -44,6 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSettings().catch((): Settings => ({} as Settings));
+  const categories = await getCategories().catch(() => []);
 
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
@@ -51,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ToastProvider>
           <AuthHydrator />
           <AnnouncementBar threshold={settings?.free_shipping_threshold} />
-          <Header logoUrl={settings?.logo_url} />
+          <Header logoUrl={settings?.logo_url} categories={categories} />
           <main className="flex-1">{children}</main>
           <Footer />
           <MobileNav />

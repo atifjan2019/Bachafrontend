@@ -7,16 +7,18 @@ import { useAuth } from "@/lib/store/auth";
 import { useState, useEffect } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { MobileMenu } from "./MobileMenu";
+import { MegaMenu } from "./MegaMenu";
+import type { Category } from "@/types";
 
 const NAV = [
   { href: "/", label: "Home" },
-  { href: "/products", label: "Shop" },
+  { href: "/products", label: "Shop", hasMegaMenu: true },
   { href: "/about", label: "About" },
   { href: "/blogs", label: "Blogs" },
   { href: "/contact", label: "Contact" },
 ];
 
-export function Header({ logoUrl }: { logoUrl?: string }) {
+export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categories?: Category[] }) {
   const openCart = useCart((s) => s.openCart);
   const itemCount = useCart((s) => s.itemCount());
   const user = useAuth((s) => s.user);
@@ -29,7 +31,7 @@ export function Header({ logoUrl }: { logoUrl?: string }) {
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-ink-10">
-      <div className="container-shop flex items-center justify-between gap-4 h-14">
+      <div className="container-shop flex items-center justify-between gap-4 h-14 relative">
         <div className="flex items-center gap-3">
           <button
             aria-label="Open menu"
@@ -41,15 +43,19 @@ export function Header({ logoUrl }: { logoUrl?: string }) {
           <BrandMark size="default" logoUrl={logoUrl} />
         </div>
 
-        <nav className="hidden lg:flex items-center gap-8 text-sm">
+        <nav className="hidden lg:flex items-center gap-8 text-sm h-full">
           {NAV.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="text-ink-70 hover:text-brand-black transition-colors"
-            >
-              {n.label}
-            </Link>
+            <div key={n.href} className="h-full flex items-center group">
+              <Link
+                href={n.href}
+                className="text-ink-70 hover:text-brand-black transition-colors flex items-center h-full"
+              >
+                {n.label}
+              </Link>
+              {n.hasMegaMenu && (
+                <MegaMenu categories={categories} />
+              )}
+            </div>
           ))}
         </nav>
 
@@ -74,7 +80,7 @@ export function Header({ logoUrl }: { logoUrl?: string }) {
             className="relative inline-flex h-10 w-10 items-center justify-center text-brand-black hover:text-ink-70"
           >
             <ShoppingBag className="h-5 w-5" />
-            {itemCount > 0 && (
+            {mounted && itemCount > 0 && (
               <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-brand-black text-[10px] text-white flex items-center justify-center">
                 {itemCount}
               </span>
