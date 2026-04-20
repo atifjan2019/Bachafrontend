@@ -12,7 +12,7 @@ function adaptCategory(raw: Record<string, unknown>): Category {
     slug: String(raw.slug ?? ""),
     name: String(raw.name ?? ""),
     image: String(raw.image ?? ""),
-    product_count: Number(raw.product_count ?? 0),
+    product_count: Number(raw.product_count ?? raw.products_count ?? 0),
     children: Array.isArray(raw.children) ? raw.children.map((child: any) => adaptCategory(child)) : undefined,
   };
 }
