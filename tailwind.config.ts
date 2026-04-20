@@ -22,10 +22,10 @@ const config: Config = {
       colors: {
         brand: {
           red: "#e81d25",
-          black: "#0A0A0A",
+          black: "#141414",
         },
         ink: {
-          DEFAULT: "#0A0A0A",
+          DEFAULT: "#141414",
           70: "#3D3D3D",
           50: "#6B6B6B",
           30: "#A3A3A3",
@@ -44,19 +44,19 @@ const config: Config = {
           foreground: "#6B6B6B",
         },
         border: "#E6E6E8",
-        gold: "#0A0A0A",
+        gold: "#141414",
         // shadcn semantic aliases
         background: "#FFFFFF",
-        foreground: "#0A0A0A",
+        foreground: "#141414",
         input: "#E6E6E8",
-        ring: "#0A0A0A",
+        ring: "#141414",
         primary: {
-          DEFAULT: "#0A0A0A",
+          DEFAULT: "#141414",
           foreground: "#FFFFFF",
         },
         secondary: {
           DEFAULT: "#F6F6F7",
-          foreground: "#0A0A0A",
+          foreground: "#141414",
         },
         accent: {
           DEFAULT: "#e81d25",
@@ -68,11 +68,11 @@ const config: Config = {
         },
         card: {
           DEFAULT: "#FFFFFF",
-          foreground: "#0A0A0A",
+          foreground: "#141414",
         },
         popover: {
           DEFAULT: "#FFFFFF",
-          foreground: "#0A0A0A",
+          foreground: "#141414",
         },
       },
       fontFamily: {
