@@ -1,4 +1,4 @@
-import { fetchApi } from "./client";
+import { apiClient } from "./client";
 
 export type BlogPost = {
   id: number;
@@ -21,9 +21,11 @@ export async function getBlogPosts(params?: { per_page?: number }): Promise<{
   const query = searchParams.toString();
   const endpoint = `/blog-posts${query ? `?${query}` : ""}`;
 
-  return fetchApi(endpoint);
+  const response = await apiClient.get(endpoint);
+  return response.data;
 }
 
 export async function getBlogPost(slug: string): Promise<{ data: BlogPost }> {
-  return fetchApi(`/blog-posts/${slug}`);
+  const response = await apiClient.get(`/blog-posts/${slug}`);
+  return response.data;
 }
