@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col" cz-shortcut-listen="true">
         <ToastProvider>
           <AuthHydrator />
           <AnnouncementBar threshold={settings?.free_shipping_threshold} />

@@ -68,8 +68,8 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
             <Search className="h-5 w-5" />
           </Link>
           <Link
-            href={accountHref}
-            aria-label={user ? "Account" : "Sign in"}
+            href={mounted && user ? "/account" : "/login"}
+            aria-label={mounted && user ? "Account" : "Sign in"}
             className="hidden sm:inline-flex h-10 w-10 items-center justify-center text-brand-black hover:text-ink-70"
           >
             <User className="h-5 w-5" />

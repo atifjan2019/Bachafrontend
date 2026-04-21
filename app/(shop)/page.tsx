@@ -62,7 +62,7 @@ export default async function HomePage() {
               <Link key={c.slug} href={`/category/${c.slug}`} className="group block">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-surface-sunken">
                   <Image
-                    src={c.image}
+                    src={c.image || "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=500&auto=format&fit=crop&q=70"}
                     alt={c.name}
                     fill
                     sizes="(max-width: 1024px) 50vw, 25vw"

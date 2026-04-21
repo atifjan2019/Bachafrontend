@@ -16,8 +16,8 @@ export function BrandMark({ variant = "light", size = "default", logoUrl }: Bran
 
   const maxH = {
     default: "max-h-10",
-    lg:      "max-h-[60px]",
-    xl:      "max-h-20",
+    lg: "max-h-[60px]",
+    xl: "max-h-20",
   }[size];
 
   return (
@@ -30,6 +30,7 @@ export function BrandMark({ variant = "light", size = "default", logoUrl }: Bran
         sizes="100vw"
         className={`w-auto h-auto ${maxH} object-contain`}
         priority
+        referrerPolicy="no-referrer"
       />
     </Link>
   );
