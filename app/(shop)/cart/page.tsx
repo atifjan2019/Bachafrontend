@@ -20,7 +20,7 @@ export default function CartPage() {
       {lines.length === 0 ? (
         <EmptyCart />
       ) : (
-        <div className="grid lg:grid-cols-[1fr_360px] gap-8">
+        <div className="grid lg:grid-cols-[1fr_minmax(300px,360px)] gap-6 lg:gap-8">
           <div className="bg-ivory border border-border rounded-lg p-5">
             {lines.map((l) => (
               <CartLineItem key={l.id} line={l} />

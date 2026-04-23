@@ -95,7 +95,7 @@ export default function CheckoutPage() {
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="grid lg:grid-cols-[1fr_380px] gap-8"
+        className="grid lg:grid-cols-[1fr_minmax(320px,380px)] gap-6 lg:gap-8"
       >
         <div className="space-y-8">
           <section className="bg-ivory border border-border rounded-lg p-5 lg:p-6">

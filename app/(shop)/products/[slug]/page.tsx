@@ -25,7 +25,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <span className="text-brand-black">{product.name}</span>
       </nav>
 
-      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+      <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
         <ProductGallery images={product.images} name={product.name} />
         <div>
           <ProductDetailActions product={product} />
@@ -39,23 +39,25 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <AccordionItem value="size">
                 <AccordionTrigger>Size Guide</AccordionTrigger>
                 <AccordionContent>
-                  <table className="w-full text-left text-xs">
-                    <thead className="text-brand-black">
-                      <tr>
-                        <th className="py-2">Size</th>
-                        <th className="py-2">Age</th>
-                        <th className="py-2">Chest (in)</th>
-                        <th className="py-2">Length (in)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-muted">
-                      <tr className="border-t border-border"><td className="py-1.5">2-3Y</td><td>2-3 years</td><td>22</td><td>18</td></tr>
-                      <tr className="border-t border-border"><td className="py-1.5">4-5Y</td><td>4-5 years</td><td>24</td><td>20</td></tr>
-                      <tr className="border-t border-border"><td className="py-1.5">6-7Y</td><td>6-7 years</td><td>26</td><td>23</td></tr>
-                      <tr className="border-t border-border"><td className="py-1.5">8-9Y</td><td>8-9 years</td><td>28</td><td>26</td></tr>
-                      <tr className="border-t border-border"><td className="py-1.5">10-11Y</td><td>10-11 years</td><td>30</td><td>28</td></tr>
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                    <table className="w-full text-left text-xs min-w-[340px]">
+                      <thead className="text-brand-black">
+                        <tr>
+                          <th className="py-2 pr-3">Size</th>
+                          <th className="py-2 pr-3">Age</th>
+                          <th className="py-2 pr-3">Chest (in)</th>
+                          <th className="py-2">Length (in)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-muted">
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">2-3Y</td><td className="pr-3">2-3 years</td><td className="pr-3">22</td><td>18</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">4-5Y</td><td className="pr-3">4-5 years</td><td className="pr-3">24</td><td>20</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">6-7Y</td><td className="pr-3">6-7 years</td><td className="pr-3">26</td><td>23</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">8-9Y</td><td className="pr-3">8-9 years</td><td className="pr-3">28</td><td>26</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">10-11Y</td><td className="pr-3">10-11 years</td><td className="pr-3">30</td><td>28</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="care">

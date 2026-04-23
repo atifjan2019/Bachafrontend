@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { ArrowUpRight, Check } from "lucide-react";
 
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
@@ -11,49 +9,115 @@ export function ContactForm() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("sending");
-    // Simulate send — replace with real API call when ready
     await new Promise((r) => setTimeout(r, 800));
     setStatus("sent");
   }
 
   if (status === "sent") {
     return (
-      <p className="text-sm text-ink-70 py-4">
-        Thanks for reaching out! We'll get back to you within one working day.
-      </p>
+      <div className="text-center py-8">
+        <div className="h-16 w-16 mx-auto mb-6 border-2 border-brand-red text-brand-red flex items-center justify-center">
+          <Check className="h-7 w-7" strokeWidth={2.5} />
+        </div>
+        <p className="text-[11px] uppercase tracking-[0.28em] text-brand-red font-bold mb-3">
+          Message Sent
+        </p>
+        <h3 className="font-display text-2xl sm:text-3xl font-bold text-brand-black mb-3 tracking-tight">
+          Thanks for reaching out!
+        </h3>
+        <p className="text-ink-70 leading-relaxed max-w-sm mx-auto">
+          We&apos;ll get back to you within one working day. For urgent queries, WhatsApp is the
+          quickest route.
+        </p>
+      </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid sm:grid-cols-2 gap-5">
-        <div className="space-y-1.5">
-          <Label htmlFor="cf-name">Full name</Label>
-          <Input id="cf-name" name="name" placeholder="Ahmed Ali" required />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="cf-email">Email</Label>
-          <Input id="cf-email" name="email" type="email" placeholder="you@example.com" required />
-        </div>
+        <Field label="Full Name" id="cf-name" name="name" placeholder="Ahmed Ali" required />
+        <Field
+          label="Email"
+          id="cf-email"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          required
+        />
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="cf-subject">Subject</Label>
-        <Input id="cf-subject" name="subject" placeholder="Order #1234 — size question" required />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="cf-message">Message</Label>
+
+      <Field
+        label="Subject"
+        id="cf-subject"
+        name="subject"
+        placeholder="Order #1234 — size question"
+        required
+      />
+
+      <div>
+        <label
+          htmlFor="cf-message"
+          className="block text-[10px] uppercase tracking-[0.28em] text-brand-red font-bold mb-2"
+        >
+          Message
+        </label>
         <textarea
           id="cf-message"
           name="message"
           rows={5}
           required
           placeholder="Tell us how we can help…"
-          className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+          className="w-full border-2 border-ink-10 focus:border-brand-red bg-white px-4 py-3 text-sm text-brand-black placeholder:text-ink-30 outline-none transition-colors resize-none"
         />
       </div>
-      <Button type="submit" disabled={status === "sending"} className="w-full sm:w-auto">
-        {status === "sending" ? "Sending…" : "Send message"}
-      </Button>
+
+      <button
+        type="submit"
+        disabled={status === "sending"}
+        className="group relative inline-flex items-center justify-center gap-3 bg-brand-red text-white px-8 py-5 text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.18em] transition-all duration-500 hover:bg-brand-black disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto"
+      >
+        {status === "sending" ? "Sending…" : "Send Message"}
+        <ArrowUpRight
+          className="h-4 w-4 transition-transform group-hover:rotate-45"
+          strokeWidth={2.5}
+        />
+      </button>
     </form>
+  );
+}
+
+function Field({
+  label,
+  id,
+  name,
+  type = "text",
+  placeholder,
+  required,
+}: {
+  label: string;
+  id: string;
+  name: string;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="block text-[10px] uppercase tracking-[0.28em] text-brand-red font-bold mb-2"
+      >
+        {label}
+      </label>
+      <input
+        id={id}
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        required={required}
+        className="w-full border-2 border-ink-10 focus:border-brand-red bg-white px-4 py-3 text-sm text-brand-black placeholder:text-ink-30 outline-none transition-colors"
+      />
+    </div>
   );
 }

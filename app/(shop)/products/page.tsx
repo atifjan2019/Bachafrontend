@@ -171,9 +171,9 @@ export default function ProductsPage() {
 
       {/* Main content */}
       <div className="container-shop py-8 lg:py-12">
-        <div className="flex gap-10">
+        <div className="flex gap-6 lg:gap-10">
           {/* Sidebar filters (desktop) */}
-          <aside className="hidden lg:block w-60 flex-shrink-0">
+          <aside className="hidden lg:block w-56 xl:w-60 flex-shrink-0">
             <div className="sticky top-32 space-y-0">
               <div className="border-b border-ink-10 pb-6 mb-6">
                 <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Category</h4>
@@ -189,7 +189,7 @@ export default function ProductsPage() {
           {/* Products */}
           <div className="flex-1 min-w-0">
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
                 {Array.from({ length: 9 }).map((_, i) => (
                   <ProductCardSkeleton key={i} />
                 ))}
