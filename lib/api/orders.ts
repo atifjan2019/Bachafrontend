@@ -18,6 +18,32 @@ function normalizeStatus(raw: string): OrderStatus {
   return STATUS_MAP[raw.toLowerCase()] ?? "pending";
 }
 
+function mapBackendOrder(d: any): Order {
+  return {
+    id: String(d.id),
+    placed_at: d.created_at,
+    status: normalizeStatus(d.status),
+    customer: { name: d.customer_name, email: d.customer_email, phone: d.customer_phone },
+    shipping_address: { full_address: d.shipping_address, city: d.city, province: "", postal_code: "" },
+    items: (d.items || []).map((item: any) => ({
+      product_id: item.product_id || 0,
+      name: item.name,
+      slug: item.slug || "",
+      image: item.image || "",
+      size: item.size || "",
+      color: item.color || "",
+      quantity: Number(item.quantity),
+      unit_price: Number(item.unit_price ?? item.price ?? 0),
+      line_total: Number(item.line_total ?? (item.unit_price ?? item.price ?? 0) * item.quantity),
+    })),
+    subtotal: Number(d.subtotal) || 0,
+    shipping_fee: Number(d.shipping_fee) || 0,
+    total: Number(d.total_amount) || 0,
+    payment_method: d.payment_method,
+    notes: d.notes,
+  };
+}
+
 export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
   const settings = await getSettings();
   const baseFee = Number(settings.shipping_fee ?? 250);
@@ -84,29 +110,7 @@ export async function getOrders(): Promise<Order[]> {
     const res = await apiClient.get<{ data: Order[] }>("/account/orders");
     const data = res.data.data ?? res.data;
     if (data && Array.isArray(data)) {
-      return data.map((d: any) => ({
-        id: String(d.id),
-        placed_at: d.created_at,
-        status: normalizeStatus(d.status),
-        customer: { name: d.customer_name, email: d.customer_email, phone: d.customer_phone },
-        shipping_address: { full_address: d.shipping_address, city: d.city, province: "", postal_code: "" },
-        items: (d.items || []).map((item: any) => ({
-          product_id: item.product_id || 0,
-          name: item.name,
-          slug: item.slug || "",
-          image: item.image || "",
-          size: item.size || "",
-          color: item.color || "",
-          quantity: Number(item.quantity),
-          unit_price: Number(item.unit_price ?? item.price ?? 0),
-          line_total: Number(item.line_total ?? (item.unit_price ?? item.price ?? 0) * item.quantity),
-        })),
-        subtotal: Number(d.subtotal) || 0,
-        shipping_fee: Number(d.shipping_fee) || 0,
-        total: Number(d.total_amount) || 0,
-        payment_method: d.payment_method,
-        notes: d.notes,
-      }));
+      return data.map((d: any) => mapBackendOrder(d));
     }
   } catch (e) {
     // API request failed (likely unauthenticated)
@@ -120,35 +124,19 @@ export async function getOrders(): Promise<Order[]> {
 
 export async function getOrder(id: string): Promise<Order | null> {
   try {
+    // Try authenticated route first
     const res = await apiClient.get<{ data: any }>(`/account/orders/${id}`);
     const d = res.data.data ?? res.data;
-    if (d) {
-      return {
-        id: String(d.id),
-        placed_at: d.created_at,
-        status: normalizeStatus(d.status),
-        customer: { name: d.customer_name, email: d.customer_email, phone: d.customer_phone },
-        shipping_address: { full_address: d.shipping_address, city: d.city, province: "", postal_code: "" },
-        items: (d.items || []).map((item: any) => ({
-          product_id: item.product_id || 0,
-          name: item.name,
-          slug: item.slug || "",
-          image: item.image || "",
-          size: item.size || "",
-          color: item.color || "",
-          quantity: Number(item.quantity),
-          unit_price: Number(item.unit_price ?? item.price ?? 0),
-          line_total: Number(item.line_total ?? (item.unit_price ?? item.price ?? 0) * item.quantity),
-        })),
-        subtotal: Number(d.subtotal) || 0,
-        shipping_fee: Number(d.shipping_fee) || 0,
-        total: Number(d.total_amount) || 0,
-        payment_method: d.payment_method,
-        notes: d.notes,
-      };
-    }
+    if (d) return mapBackendOrder(d);
   } catch (e) {
-    // Unauthenticated or not found in API
+    try {
+      // Fallback to public route (useful for guest success page)
+      const res = await apiClient.get<{ data: any }>(`/orders/${id}`);
+      const d = res.data.data ?? res.data;
+      if (d) return mapBackendOrder(d);
+    } catch (ee) {
+      // Both API routes failed
+    }
   }
 
   // Fall back to locally stored guest orders
