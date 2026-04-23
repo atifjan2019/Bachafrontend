@@ -15,8 +15,9 @@ import { cn } from "@/lib/utils/cn";
 import type { Order, OrderStatus } from "@/types";
 
 const STEPS: { key: OrderStatus; label: string; icon: React.ReactNode }[] = [
-  { key: "placed", label: "Placed", icon: <Check className="h-4 w-4" /> },
-  { key: "confirmed", label: "Confirmed", icon: <Check className="h-4 w-4" /> },
+  { key: "pending", label: "Pending", icon: <Check className="h-4 w-4" /> },
+  { key: "paid", label: "Paid", icon: <Check className="h-4 w-4" /> },
+  { key: "processing", label: "Processing", icon: <Check className="h-4 w-4" /> },
   { key: "shipped", label: "Shipped", icon: <Truck className="h-4 w-4" /> },
   { key: "delivered", label: "Delivered", icon: <Home className="h-4 w-4" /> },
 ];

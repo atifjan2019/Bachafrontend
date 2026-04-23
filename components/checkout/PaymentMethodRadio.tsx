@@ -52,19 +52,19 @@ function Option({
     <label
       htmlFor={`pm-${value}`}
       className={cn(
-        "flex gap-3 p-4 rounded-md border bg-ivory cursor-pointer transition",
-        active ? "border-brand-red" : "border-border hover:border-brand-black"
+        "flex gap-4 p-3 lg:p-5 border transition-all cursor-pointer group",
+        active ? "border-brand-red bg-brand-red/[0.02]" : "border-ink-10 bg-white hover:border-ink-30"
       )}
     >
-      <RadioGroupItem value={value} id={`pm-${value}`} className="mt-1" />
+      <div className="pt-0.5">
+        <RadioGroupItem value={value} id={`pm-${value}`} />
+      </div>
       <div className="flex-1">
-        <div className="flex items-center justify-between">
-          <Label htmlFor={`pm-${value}`} className="cursor-pointer">
-            {title}
-          </Label>
-        </div>
-        <p className="text-xs text-muted mt-0.5">{subtitle}</p>
-        {active && children}
+        <Label htmlFor={`pm-${value}`} className="cursor-pointer font-bold text-[13px] lg:text-sm uppercase tracking-wider block mb-1">
+          {title}
+        </Label>
+        <p className="text-xs text-ink-50 leading-relaxed">{subtitle}</p>
+        {active && <div className="mt-4 pt-4 border-t border-brand-red/10 animate-fade-in">{children}</div>}
       </div>
     </label>
   );

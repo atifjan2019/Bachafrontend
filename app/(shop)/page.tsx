@@ -42,7 +42,7 @@ export default async function HomePage() {
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-red via-brand-red/50 to-transparent" />
 
         {/* Side label (desktop) */}
-        <div className="hidden lg:flex absolute left-6 top-1/2 -translate-y-1/2 -rotate-90 origin-center gap-4 text-[10px] uppercase tracking-[0.42em] text-white/40 font-semibold">
+        <div className="hidden xl:flex absolute -left-24 top-1/2 -translate-y-1/2 -rotate-90 origin-center gap-4 text-[10px] uppercase tracking-[0.42em] text-white/40 font-semibold">
           <span>Est · 2020</span>
           <span className="text-brand-red">◆</span>
           <span>Made in Pakistan</span>
@@ -62,7 +62,7 @@ export default async function HomePage() {
                 </span>
               </div>
 
-              <h1 className="font-display font-bold tracking-tightest leading-[0.92] text-[clamp(2.5rem,9vw,8rem)] text-white">
+              <h1 className="font-display font-bold tracking-tightest leading-[0.92] text-[clamp(2.5rem,9vw,6rem)] text-white">
                 <span className="block">Bold styles</span>
                 <span className="block">
                   for <span className="italic text-brand-red">little</span>
@@ -162,22 +162,22 @@ export default async function HomePage() {
       </section>
 
       {/* ─── MARQUEE ──────────────────────────────────────────── */}
-      <section className="relative bg-brand-red text-white overflow-hidden py-4 sm:py-5 border-y-2 border-brand-black">
+      <section className="relative bg-brand-red text-white overflow-hidden py-2 sm:py-4 border-y-2 border-brand-black">
         <div className="flex animate-marquee whitespace-nowrap gap-8 sm:gap-12">
           {[...Array(12)].map((_, i) => (
             <div key={i} className="flex items-center gap-6 sm:gap-12 px-4 sm:px-6">
-              <span className="font-display text-xl sm:text-2xl lg:text-4xl font-black uppercase tracking-tight">
+              <span className="font-display text-sm  md:text-xl  font-black uppercase tracking-tight">
                 New Arrivals
               </span>
-              <span className="text-lg sm:text-2xl">✦</span>
-              <span className="font-display text-xl sm:text-2xl lg:text-4xl font-black uppercase tracking-tight italic">
+              <span className="text-lg ">✦</span>
+              <span className="font-display text-sm  md:text-xl  font-black uppercase tracking-tight">
                 Limited Drops
               </span>
-              <span className="text-lg sm:text-2xl">✦</span>
-              <span className="font-display text-xl sm:text-2xl lg:text-4xl font-black uppercase tracking-tight">
+              <span className="text-lg ">✦</span>
+              <span className="font-display text-sm  md:text-xl  font-black uppercase tracking-tight">
                 Free Shipping
               </span>
-              <span className="text-lg sm:text-2xl">✦</span>
+              <span className="text-lg ">✦</span>
             </div>
           ))}
         </div>

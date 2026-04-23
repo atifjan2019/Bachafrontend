@@ -1,18 +1,13 @@
 import { apiClient } from "./client";
+import { getSettings } from "./settings";
 import type { CheckoutPayload, Order, OrderStatus } from "@/types";
 
-const SHIPPING_FREE_THRESHOLD = 5000;
-const SHIPPING_FEE = 250;
-
-function newOrderId() {
-  return "BSF-" + Math.floor(100000 + Math.random() * 900000).toString();
-}
+const newOrderId = () => "BSF-" + Math.floor(100000 + Math.random() * 900000).toString();
 
 const STATUS_MAP: Record<string, OrderStatus> = {
-  "pending": "placed",
-  "placed": "placed",
-  "confirmed": "confirmed",
-  "processing": "confirmed",
+  "pending": "pending",
+  "paid": "paid",
+  "processing": "processing",
   "shipped": "shipped",
   "delivered": "delivered",
   "cancelled": "cancelled",
@@ -20,12 +15,16 @@ const STATUS_MAP: Record<string, OrderStatus> = {
 };
 
 function normalizeStatus(raw: string): OrderStatus {
-  return STATUS_MAP[raw.toLowerCase()] ?? "placed";
+  return STATUS_MAP[raw.toLowerCase()] ?? "pending";
 }
+
 export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
-  // Transform frontend checkout payload into backend's flat format
+  const settings = await getSettings();
+  const baseFee = Number(settings.shipping_fee ?? 250);
+  const threshold = Number(settings.free_shipping_threshold ?? 5000);
+
   const subtotal = payload.items.reduce((s, i) => s + i.unit_price * i.quantity, 0);
-  const shipping_fee = subtotal >= SHIPPING_FREE_THRESHOLD ? 0 : SHIPPING_FEE;
+  const shipping_fee = subtotal >= threshold ? 0 : baseFee;
   const total_amount = subtotal + shipping_fee;
 
   const backendPayload = {
@@ -50,11 +49,15 @@ export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
   const res = await apiClient.post("/orders", backendPayload);
   const data = res.data.data ?? res.data;
 
+  const finalSubtotal = Number(data.subtotal ?? subtotal);
+  const finalShipping = Number(data.shipping_fee ?? shipping_fee);
+  const finalTotal = Number(data.total_amount ?? total_amount);
+
   // Map backend response to frontend Order type
   return {
     id: String(data.id ?? newOrderId()),
     placed_at: new Date().toISOString(),
-    status: "placed",
+    status: "pending",
     customer: payload.customer,
     shipping_address: payload.shipping_address,
     items: payload.items.map((i) => ({
@@ -68,9 +71,9 @@ export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
       unit_price: i.unit_price,
       line_total: i.unit_price * i.quantity,
     })),
-    subtotal,
-    shipping_fee,
-    total: total_amount,
+    subtotal: finalSubtotal,
+    shipping_fee: finalShipping,
+    total: finalTotal,
     payment_method: payload.payment_method,
     notes: payload.notes,
   };
@@ -94,13 +97,13 @@ export async function getOrders(): Promise<Order[]> {
           image: item.image || "",
           size: item.size || "",
           color: item.color || "",
-          quantity: item.quantity,
-          unit_price: item.unit_price ?? item.price ?? 0,
-          line_total: item.line_total ?? (item.unit_price ?? item.price ?? 0) * item.quantity,
+          quantity: Number(item.quantity),
+          unit_price: Number(item.unit_price ?? item.price ?? 0),
+          line_total: Number(item.line_total ?? (item.unit_price ?? item.price ?? 0) * item.quantity),
         })),
-        subtotal: d.subtotal || 0,
-        shipping_fee: d.shipping_fee || 0,
-        total: d.total_amount || 0,
+        subtotal: Number(d.subtotal) || 0,
+        shipping_fee: Number(d.shipping_fee) || 0,
+        total: Number(d.total_amount) || 0,
         payment_method: d.payment_method,
         notes: d.notes,
       }));
@@ -133,13 +136,13 @@ export async function getOrder(id: string): Promise<Order | null> {
           image: item.image || "",
           size: item.size || "",
           color: item.color || "",
-          quantity: item.quantity,
-          unit_price: item.unit_price ?? item.price ?? 0,
-          line_total: item.line_total ?? (item.unit_price ?? item.price ?? 0) * item.quantity,
+          quantity: Number(item.quantity),
+          unit_price: Number(item.unit_price ?? item.price ?? 0),
+          line_total: Number(item.line_total ?? (item.unit_price ?? item.price ?? 0) * item.quantity),
         })),
-        subtotal: d.subtotal || 0,
-        shipping_fee: d.shipping_fee || 0,
-        total: d.total_amount || 0,
+        subtotal: Number(d.subtotal) || 0,
+        shipping_fee: Number(d.shipping_fee) || 0,
+        total: Number(d.total_amount) || 0,
         payment_method: d.payment_method,
         notes: d.notes,
       };

@@ -8,9 +8,9 @@ export function OrderSummaryCard() {
   const lines = useCart((s) => s.lines);
 
   return (
-    <aside className="bg-ivory border border-border rounded-lg p-5 lg:sticky lg:top-24">
-      <h3 className="font-display text-lg mb-4">Order Summary</h3>
-      <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+    <aside className="bg-white border border-ink-10 p-4 sm:p-6">
+      <h3 className="font-display text-base lg:text-xl mb-4 lg:mb-6 uppercase tracking-wider">Order Summary</h3>
+      <div className="space-y-4 max-h-64 overflow-y-auto pr-1 no-scrollbar">
         {lines.map((l) => (
           <div key={l.id} className="flex gap-3">
             <div className="relative h-16 w-14 flex-shrink-0 overflow-hidden rounded-md border border-border bg-cream">

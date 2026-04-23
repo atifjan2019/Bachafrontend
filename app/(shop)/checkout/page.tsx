@@ -17,7 +17,6 @@ import { placeOrder } from "@/lib/api/orders";
 import { EmptyCart } from "@/components/cart/EmptyCart";
 import { useToast } from "@/components/ui/toast";
 
-const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar", "Quetta", "Hyderabad", "Sialkot", "Gujranwala", "Bahawalpur", "Other"];
 const PROVINCES = ["Sindh", "Punjab", "Islamabad Capital Territory", "Khyber Pakhtunkhwa", "Balochistan", "Azad Kashmir", "Gilgit-Baltistan"];
 
 export default function CheckoutPage() {
@@ -30,7 +29,7 @@ export default function CheckoutPage() {
 
   const form = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { payment_method: "cod", city: "Karachi", province: "Sindh" },
+    defaultValues: { payment_method: "cod", city: "", province: "Sindh" },
   });
 
   // Auto-fill form with logged-in user's info
@@ -86,99 +85,112 @@ export default function CheckoutPage() {
   const payment = form.watch("payment_method");
 
   return (
-    <div className="container-shop py-8 lg:py-12">
-      <div className="text-center mb-8">
-        <GoldDivider className="mb-4" />
-        <h1 className="font-display text-3xl sm:text-4xl">Checkout</h1>
-        <p className="mt-2 text-sm text-muted">Almost there. Let us know where to send the parcel.</p>
+    <div className="container-shop py-6 sm:py-8 lg:py-16">
+      <div className="text-center mb-6 sm:mb-10">
+        <GoldDivider className="mb-4 lg:mb-8 mx-auto" />
+        <h1 className="font-display text-2xl sm:text-3xl lg:text-5xl">Checkout</h1>
+        <p className="mt-2 text-xs sm:text-sm text-muted uppercase tracking-[0.1em]">Complete your order</p>
       </div>
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="grid lg:grid-cols-[1fr_minmax(320px,380px)] gap-6 lg:gap-8"
+        className="grid lg:grid-cols-[1fr_380px] gap-4 lg:gap-12 items-start"
       >
-        <div className="space-y-8">
-          <section className="bg-ivory border border-border rounded-lg p-5 lg:p-6">
-            <h3 className="font-display text-lg mb-4">Your details</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
+        <div className="space-y-4 lg:space-y-8">
+          <section className="bg-white border border-ink-10 p-4 sm:p-6 lg:p-10">
+            <h3 className="font-display text-base lg:text-2xl mb-4 lg:mb-8 flex items-center gap-3">
+              <span className="flex h-6 w-6 items-center justify-center bg-brand-red text-white text-[10px] font-bold">01</span>
+              Your Details
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-3 lg:gap-6">
               <div>
-                <Label htmlFor="name">Full name</Label>
-                <Input id="name" {...form.register("name")} className="mt-1.5" placeholder="e.g. Ayesha Khan" />
+                <Label htmlFor="name" className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">Full name</Label>
+                <Input id="name" {...form.register("name")} className="h-10 lg:h-12 text-sm" placeholder="Ayesha Khan" />
                 <FieldError>{form.formState.errors.name?.message}</FieldError>
               </div>
               <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" {...form.register("phone")} className="mt-1.5" placeholder="03XXXXXXXXX" />
+                <Label htmlFor="phone" className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">Phone Number</Label>
+                <Input id="phone" {...form.register("phone")} className="h-10 lg:h-12 text-sm" placeholder="03XXXXXXXXX" />
                 <FieldError>{form.formState.errors.phone?.message}</FieldError>
               </div>
               <div className="sm:col-span-2">
-                <Label htmlFor="email">Email (optional)</Label>
-                <Input id="email" {...form.register("email")} className="mt-1.5" placeholder="you@example.com" />
+                <Label htmlFor="email" className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">Email Address (Optional)</Label>
+                <Input id="email" {...form.register("email")} className="h-10 lg:h-12 text-sm" placeholder="you@example.com" />
                 <FieldError>{form.formState.errors.email?.message}</FieldError>
               </div>
             </div>
           </section>
 
-          <section className="bg-ivory border border-border rounded-lg p-5 lg:p-6">
-            <h3 className="font-display text-lg mb-4">Shipping address</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
+          <section className="bg-white border border-ink-10 p-4 sm:p-6 lg:p-10">
+            <h3 className="font-display text-base lg:text-2xl mb-4 lg:mb-8 flex items-center gap-3">
+              <span className="flex h-6 w-6 items-center justify-center bg-brand-red text-white text-[10px] font-bold">02</span>
+              Shipping Address
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-3 lg:gap-6">
               <div className="sm:col-span-2">
-                <Label htmlFor="full_address">Full address</Label>
-                <Input id="full_address" {...form.register("full_address")} className="mt-1.5" placeholder="House #, Street, Area" />
+                <Label htmlFor="full_address" className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">Street Address</Label>
+                <Input id="full_address" {...form.register("full_address")} className="h-10 lg:h-12 text-sm" placeholder="House #, Street name, Area..." />
                 <FieldError>{form.formState.errors.full_address?.message}</FieldError>
               </div>
               <div>
-                <Label>City</Label>
-                <Select
-                  value={form.watch("city")}
-                  onValueChange={(v) => form.setValue("city", v, { shouldValidate: true })}
-                >
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="city" className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">City</Label>
+                <Input id="city" {...form.register("city")} className="h-10 lg:h-12 text-sm" placeholder="e.g. Lahore" />
                 <FieldError>{form.formState.errors.city?.message}</FieldError>
               </div>
               <div>
-                <Label>Province</Label>
+                <Label className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">Province</Label>
                 <Select
                   value={form.watch("province")}
                   onValueChange={(v) => form.setValue("province", v, { shouldValidate: true })}
                 >
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 lg:h-12 text-sm"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {PROVINCES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FieldError>{form.formState.errors.province?.message}</FieldError>
               </div>
-              <div>
-                <Label htmlFor="postal_code">Postal code</Label>
-                <Input id="postal_code" {...form.register("postal_code")} className="mt-1.5" placeholder="75500" />
+              <div className="sm:col-span-2">
+                <Label htmlFor="postal_code" className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">Postal Code (Optional)</Label>
+                <Input id="postal_code" {...form.register("postal_code")} className="h-10 lg:h-12 text-sm" placeholder="75500" />
                 <FieldError>{form.formState.errors.postal_code?.message}</FieldError>
               </div>
             </div>
-            <div className="mt-4">
-              <Label htmlFor="notes">Order notes (optional)</Label>
-              <Textarea id="notes" {...form.register("notes")} className="mt-1.5" placeholder="Special instructions, apartment number, landmark..." />
+            <div className="mt-4 lg:mt-8">
+              <Label htmlFor="notes" className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">Order Notes (Optional)</Label>
+              <Textarea id="notes" {...form.register("notes")} className="text-sm min-h-[80px] lg:min-h-[120px]" placeholder="Anything else we should know?" />
             </div>
           </section>
 
-          <section className="bg-ivory border border-border rounded-lg p-5 lg:p-6">
-            <h3 className="font-display text-lg mb-4">Payment method</h3>
+          <section className="bg-white border border-ink-10 p-4 sm:p-6 lg:p-10">
+            <h3 className="font-display text-base lg:text-2xl mb-4 lg:mb-8 flex items-center gap-3">
+              <span className="flex h-6 w-6 items-center justify-center bg-brand-red text-white text-[10px] font-bold">03</span>
+              Payment Method
+            </h3>
             <PaymentMethodRadio
               value={payment}
               onChange={(v) => form.setValue("payment_method", v)}
             />
           </section>
 
-          <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-            {submitting ? "Placing order..." : "Place Order"}
-          </Button>
+          <div className="hidden lg:block pt-4">
+            <Button type="submit" size="lg" className="w-full h-14 text-sm font-bold uppercase tracking-widest" disabled={submitting}>
+              {submitting ? "Processing..." : "Confirm Order"}
+            </Button>
+          </div>
         </div>
 
-        <OrderSummaryCard />
+        <div className="sticky top-24 space-y-4">
+          <OrderSummaryCard />
+          <div className="lg:hidden">
+            <Button type="submit" size="lg" className="w-full h-12 text-xs font-bold uppercase tracking-widest" disabled={submitting}>
+              {submitting ? "Processing..." : "Place Order"}
+            </Button>
+          </div>
+          <p className="text-[10px] text-center text-ink-50 px-4">
+            By placing your order, you agree to our Terms of Service and Privacy Policy.
+          </p>
+        </div>
       </form>
     </div>
   );

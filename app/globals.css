@@ -51,7 +51,7 @@
 
 @layer components {
   .container-shop {
-    @apply mx-auto w-full max-w-[1360px] px-4 sm:px-6 lg:px-10;
+    @apply mx-auto w-full max-w-[1360px] px-4 sm:px-6 lg:px-10 xl:px-20;
   }
 
   /* Typographic tokens */

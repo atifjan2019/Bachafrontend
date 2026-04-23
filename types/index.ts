@@ -79,7 +79,7 @@ export type CartLine = {
   max_stock: number;
 };
 
-export type OrderStatus = "placed" | "confirmed" | "shipped" | "delivered" | "cancelled";
+export type OrderStatus = "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled";
 
 export type OrderItem = {
   product_id: number;
