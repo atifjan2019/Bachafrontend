@@ -4,7 +4,15 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react";
 import type { Category } from "@/types";
 
-export function MegaMenu({ categories }: { categories: Category[] }) {
+export function MegaMenu({
+  categories,
+  isOpen,
+  onClose,
+}: {
+  categories: Category[];
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   if (!categories || categories.length === 0) return null;
 
   const featured = categories.find((category) => category.image) ?? categories[0];
@@ -12,7 +20,13 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
   const extraCategories = categories.slice(6);
 
   return (
-    <div className="fixed inset-x-0 top-[calc(var(--header-h,5rem)+2px)] z-50 flex justify-center px-4 pt-0 opacity-0 invisible translate-y-1 pointer-events-none transition-all duration-200 ease-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:pointer-events-auto">
+    <div
+      className={`fixed inset-x-0 top-[calc(var(--header-h,5rem)+2px)] z-50 flex justify-center px-4 pt-4 -mt-4 transition-all duration-200 ease-out mega-menu-content ${
+        isOpen
+          ? "opacity-100 visible translate-y-0 pointer-events-auto"
+          : "opacity-0 invisible translate-y-1 pointer-events-none"
+      }`}
+    >
       <div className="w-full max-w-[1120px] overflow-hidden border border-ink-10 bg-white shadow-deep">
         {/* Top accent bar */}
         <div className="h-[2px] bg-gradient-to-r from-transparent via-brand-red to-transparent" />
@@ -34,6 +48,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
               </div>
               <Link
                 href="/products"
+                onClick={onClose}
                 className="group/all inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-brand-black hover:text-brand-red transition-colors shrink-0"
               >
                 View All
@@ -49,6 +64,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                 >
                   <Link
                     href={`/products?category=${parent.slug}`}
+                    onClick={onClose}
                     className="flex items-start justify-between gap-2"
                   >
                     <span className="min-w-0">
@@ -70,6 +86,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                         <li key={child.id}>
                           <Link
                             href={`/products?category=${child.slug}`}
+                            onClick={onClose}
                             className="block text-[13px] text-ink-70 transition-colors hover:text-brand-red truncate"
                           >
                             {child.name}
@@ -88,6 +105,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   <Link
                     key={category.id}
                     href={`/products?category=${category.slug}`}
+                    onClick={onClose}
                     className="border border-ink-10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-70 transition-colors hover:border-brand-red hover:bg-brand-red hover:text-white"
                   >
                     {category.name}
@@ -100,6 +118,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
           {/* Right: featured */}
           <Link
             href={`/products?category=${featured.slug}`}
+            onClick={onClose}
             className="group/feat relative hidden md:flex flex-col justify-between overflow-hidden bg-brand-black p-6 text-white min-h-[340px]"
           >
             {featured.image ? (

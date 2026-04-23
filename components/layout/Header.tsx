@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/common/BrandMark";
 import { ShoppingBag, Search, Menu, User } from "lucide-react";
 import { useCart } from "@/lib/store/cart";
 import { useAuth } from "@/lib/store/auth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { MobileMenu } from "./MobileMenu";
 import { MegaMenu } from "./MegaMenu";
@@ -26,6 +26,9 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  const [shopMenuOpen, setShopMenuOpen] = useState(false);
+  const activeTimer = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
@@ -34,6 +37,31 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Close mega menu on click outside
+  useEffect(() => {
+    if (!shopMenuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".mega-menu-trigger") && !target.closest(".mega-menu-content")) {
+        setShopMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [shopMenuOpen]);
+
+  const handleMouseEnter = () => {
+    if (activeTimer.current) clearTimeout(activeTimer.current);
+    setShopMenuOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    const timer = setTimeout(() => {
+      setShopMenuOpen(false);
+    }, 150);
+    activeTimer.current = timer;
+  };
 
   return (
     <header
@@ -58,17 +86,36 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
 
           <nav className="hidden lg:flex items-center gap-9 text-[13px] font-semibold uppercase tracking-[0.14em]">
             {NAV.map((n) => (
-              <div key={n.href} className="h-full flex items-center group relative">
+              <div
+                key={n.href}
+                className="h-full flex items-center relative mega-menu-trigger"
+                onMouseEnter={() => n.hasMegaMenu && handleMouseEnter()}
+                onMouseLeave={() => n.hasMegaMenu && handleMouseLeave()}
+              >
                 <Link
                   href={n.href}
-                  className="relative text-brand-black hover:text-brand-red transition-colors py-2"
+                  className={`relative transition-colors py-2 uppercase tracking-[0.14em] ${
+                    n.hasMegaMenu && shopMenuOpen
+                      ? "text-brand-red"
+                      : "text-brand-black hover:text-brand-red"
+                  }`}
                 >
                   <span className="relative inline-block">
                     {n.label}
-                    <span className="absolute left-0 -bottom-0.5 h-[2px] w-0 bg-brand-red transition-all duration-300 group-hover:w-full" />
+                    <span
+                      className={`absolute left-0 -bottom-0.5 h-[2px] bg-brand-red transition-all duration-300 ${
+                        n.hasMegaMenu && shopMenuOpen ? "w-full" : "w-0"
+                      }`}
+                    />
                   </span>
                 </Link>
-                {n.hasMegaMenu && <MegaMenu categories={categories} />}
+                {n.hasMegaMenu && (
+                  <MegaMenu
+                    categories={categories}
+                    isOpen={shopMenuOpen}
+                    onClose={() => setShopMenuOpen(false)}
+                  />
+                )}
               </div>
             ))}
           </nav>
