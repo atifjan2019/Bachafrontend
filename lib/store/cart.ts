@@ -25,14 +25,18 @@ export const useCart = create<CartState>()(
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
       addLine: (line) => {
-        const existing = get().lines.find(
-          (l) => l.product_id === line.product_id && l.variant_id === line.variant_id
-        );
+        const existing = get().lines.find((l) => l.id === line.id);
         if (existing) {
           set({
             lines: get().lines.map((l) =>
               l.id === existing.id
-                ? { ...l, quantity: Math.min(l.quantity + line.quantity, l.max_stock) }
+                ? {
+                    ...l,
+                    quantity: Math.min(
+                      l.quantity + line.quantity,
+                      l.max_stock ?? Infinity
+                    ),
+                  }
                 : l
             ),
           });

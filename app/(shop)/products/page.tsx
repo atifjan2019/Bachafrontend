@@ -31,6 +31,12 @@ export default function ProductsPage() {
     getCategories().then(setCategories);
   }, []);
 
+  // Reset to the first page whenever filters/sort change so we don't request
+  // a page number that no longer exists in the filtered result set.
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCats, price, sort]);
+
   useEffect(() => {
     let mounted = true;
     setLoading(true);

@@ -12,14 +12,19 @@ export const apiClient = axios.create({
   headers: { Accept: "application/json" },
 });
 
-// Automatically retry requests if they hit Laravel's rate limit
+// Automatically retry requests if they hit Laravel's rate limit (capped)
+const MAX_429_RETRIES = 2;
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 429) {
-      const retryAfter = parseInt(error.response.headers["retry-after"] ?? "2", 10);
-      await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-      return apiClient.request(error.config);
+    const config = error.config;
+    if (error.response?.status === 429 && config) {
+      config.__retryCount = (config.__retryCount ?? 0) + 1;
+      if (config.__retryCount <= MAX_429_RETRIES) {
+        const retryAfter = parseInt(error.response.headers["retry-after"] ?? "2", 10);
+        await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+        return apiClient.request(config);
+      }
     }
     return Promise.reject(error);
   }

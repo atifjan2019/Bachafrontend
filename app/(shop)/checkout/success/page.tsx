@@ -34,10 +34,12 @@ function SuccessFallback() {
 function SuccessInner() {
   const params = useSearchParams();
   const id = params.get("id");
-  const [order, setOrder] = useState<Order | null>(null);
+  // undefined = still loading, null = no id / not found, Order = loaded
+  const [order, setOrder] = useState<Order | null | undefined>(undefined);
 
   useEffect(() => {
-    if (id) getOrder(id).then(setOrder);
+    if (id) getOrder(id).then((o) => setOrder(o ?? null));
+    else setOrder(null);
   }, [id]);
 
   return (
@@ -61,7 +63,7 @@ function SuccessInner() {
           )}
         </p>
 
-        {!order ? (
+        {order === undefined ? (
           <div className="mt-10 space-y-6 max-w-2xl mx-auto">
             <div className="bg-white border border-ink-10 p-6 lg:p-8 shadow-sm space-y-6">
               <div className="flex justify-between">
@@ -83,7 +85,7 @@ function SuccessInner() {
               <Skeleton className="h-32 w-full" />
             </div>
           </div>
-        ) : (
+        ) : order ? (
           <div className="mt-10 space-y-6 text-left max-w-2xl mx-auto">
             <div className="bg-white border border-ink-10 p-6 lg:p-8 shadow-sm">
               <div className="flex items-center justify-between mb-6">
@@ -145,7 +147,7 @@ function SuccessInner() {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild>

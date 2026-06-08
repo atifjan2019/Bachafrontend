@@ -34,7 +34,10 @@ function mapBackendOrder(d: any): Order {
       color: item.color || "",
       quantity: Number(item.quantity),
       unit_price: Number(item.unit_price ?? item.price ?? 0),
-      line_total: Number(item.line_total ?? (item.unit_price ?? item.price ?? 0) * item.quantity),
+      line_total: Number(
+        item.line_total ??
+          Number(item.unit_price ?? item.price ?? 0) * Number(item.quantity)
+      ),
     })),
     subtotal: Number(d.subtotal) || 0,
     shipping_fee: Number(d.shipping_fee) || 0,
@@ -118,8 +121,12 @@ export async function getOrders(): Promise<Order[]> {
 
   // Fall back to locally stored guest orders
   const raw = typeof window !== "undefined" ? localStorage.getItem("bsf_orders") : null;
-  const stored: Order[] = raw ? JSON.parse(raw) : [];
-  return stored;
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw) as Order[];
+  } catch {
+    return [];
+  }
 }
 
 export async function getOrder(id: string): Promise<Order | null> {

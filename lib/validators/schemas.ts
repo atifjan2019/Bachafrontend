@@ -28,7 +28,7 @@ export const checkoutSchema = z.object({
   full_address: z.string().min(8, "Please share the full address"),
   city: z.string().min(2, "City is required"),
   province: z.string().min(2, "Province is required"),
-  postal_code: z.string().min(3, "Postal code is required"),
+  postal_code: z.string().optional().or(z.literal("")),
   notes: z.string().optional(),
   payment_method: z.enum(["cod", "jazzcash", "easypaisa"]),
 });
