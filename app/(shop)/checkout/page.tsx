@@ -59,7 +59,7 @@ export default function CheckoutPage() {
           full_address: values.full_address,
           city: values.city,
           province: values.province,
-          postal_code: values.postal_code,
+          postal_code: values.postal_code || "",
         },
         items: lines.map((l) => ({
           product_id: l.product_id,
