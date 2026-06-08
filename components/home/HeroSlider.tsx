@@ -47,6 +47,16 @@ const SLIDES: Slide[] = [
       "Special-occasion pieces that are still comfy enough for kids to be kids.",
     cta: { label: "Shop festive", href: "/products" },
   },
+  {
+    image:
+      "https://media.bachastylo.com/media/c20808da-4ba4-4ea0-967f-16e75b9422bf.jpg",
+    alt: "Bacha Style collection",
+    eyebrow: "Latest collection",
+    title: "Style meets\ncomfort.",
+    subtitle:
+      "Beautifully crafted kids' outfits designed for everyday adventures.",
+    cta: { label: "Shop now", href: "/products" },
+  },
 ];
 
 const AUTO_PLAY_MS = 5000;
