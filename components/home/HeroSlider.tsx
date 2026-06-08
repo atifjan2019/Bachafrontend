@@ -18,37 +18,6 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     image:
-      "https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=1600&auto=format&fit=crop&q=70",
-    alt: "Kids' spring collection",
-    eyebrow: "New season 2026",
-    title: "Modern clothing,\nmade for small humans.",
-    subtitle:
-      "Soft, durable, and thoughtfully designed pieces for kids who live full days.",
-    cta: { label: "Shop new arrivals", href: "/products" },
-    ctaSecondary: { label: "Our story", href: "/about" },
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=1600&auto=format&fit=crop&q=70",
-    alt: "Summer essentials",
-    eyebrow: "Summer edit",
-    title: "Lightweight layers\nfor warmer days.",
-    subtitle:
-      "Breathable cottons and easy-wear pieces perfect for the season ahead.",
-    cta: { label: "Shop summer", href: "/products" },
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?w=1600&auto=format&fit=crop&q=70",
-    alt: "Festive collection",
-    eyebrow: "Festive edit",
-    title: "Dress up days,\nsorted.",
-    subtitle:
-      "Special-occasion pieces that are still comfy enough for kids to be kids.",
-    cta: { label: "Shop festive", href: "/products" },
-  },
-  {
-    image:
       "https://media.bachastylo.com/media/c20808da-4ba4-4ea0-967f-16e75b9422bf.jpg",
     alt: "Bacha Style collection",
     eyebrow: "Latest collection",
