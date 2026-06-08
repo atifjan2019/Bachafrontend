@@ -85,8 +85,8 @@ export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
   // Map backend response to frontend Order type
   return {
     id: String(data.id ?? newOrderId()),
-    placed_at: new Date().toISOString(),
-    status: "pending",
+    placed_at: data.created_at ?? new Date().toISOString(),
+    status: data.status ? normalizeStatus(data.status) : "pending",
     customer: payload.customer,
     shipping_address: payload.shipping_address,
     items: payload.items.map((i) => ({

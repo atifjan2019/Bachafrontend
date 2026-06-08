@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { SizeSelector, ColorSelector, uniqueSizes, uniqueColors } from "@/components/product/VariantSelector";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
@@ -21,6 +21,12 @@ export function ProductDetailActions({ product }: { product: Product }) {
     () => product.variants.find((v) => v.size === size && v.color === color) ?? null,
     [product.variants, size, color]
   );
+
+  // Reset quantity when the selected variant changes so a stale qty can't
+  // exceed the newly selected variant's stock.
+  useEffect(() => {
+    setQty(1);
+  }, [size, color]);
 
   const onSale = product.sale_price !== null && product.sale_price < product.price;
   const displayPrice = product.sale_price ?? product.price;
