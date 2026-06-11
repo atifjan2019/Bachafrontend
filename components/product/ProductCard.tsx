@@ -4,7 +4,13 @@ import { formatPKR } from "@/lib/utils/format";
 import type { Product } from "@/types";
 import { ArrowUpRight } from "lucide-react";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  label,
+}: {
+  product: Product;
+  label?: string;
+}) {
   const onSale = product.sale_price !== null && product.sale_price < product.price;
   const displayPrice = product.sale_price ?? product.price;
   const discount = onSale
@@ -27,7 +33,13 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-brand-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Tags */}
-        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+        <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          {label && (
+            <span className="inline-flex items-center gap-1.5 bg-brand-black/80 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur-sm">
+              <span className="h-1 w-1 rounded-full bg-brand-red" />
+              {label}
+            </span>
+          )}
           {onSale && (
             <span className="tag-red shadow-red-glow">
               −{discount}%

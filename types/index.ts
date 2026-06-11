@@ -35,6 +35,10 @@ export type Product = {
   in_stock: boolean;
   low_stock_threshold: number;
   created_at?: string;
+  is_new?: boolean;
+  is_featured?: boolean;
+  is_best_seller?: boolean;
+  label?: string | null;
 };
 
 export type ProductListResponse = {

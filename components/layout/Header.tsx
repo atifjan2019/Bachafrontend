@@ -71,9 +71,7 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
           : "bg-white"
       }`}
     >
-      {/* Thin red accent line */}
-      <div className="h-[2px] bg-gradient-to-r from-transparent via-brand-red to-transparent opacity-60" />
-
+    
       <div className="container-shop flex items-center justify-between gap-4 h-16 lg:h-20 relative">
         <div className="flex items-center gap-3 flex-1 lg:flex-initial">
           <button

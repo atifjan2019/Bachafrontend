@@ -87,6 +87,10 @@ function adaptProduct(raw: Record<string, unknown>): Product {
     in_stock: true,
     low_stock_threshold: 3,
     created_at: String(raw.created_at ?? ""),
+    is_new: Boolean(raw.is_new),
+    is_featured: Boolean(raw.is_featured),
+    is_best_seller: Boolean(raw.is_best_seller),
+    label: typeof raw.label === "string" && raw.label.length > 0 ? raw.label : null,
   };
 }
 
@@ -198,16 +202,44 @@ export async function getRelated(slug: string, categorySlug: string, limit = 4):
   }
 }
 
+async function fetchProductList(params: Record<string, string | number>): Promise<Product[]> {
+  const res = await apiClient.get("/products", { params });
+  const rawProducts: Record<string, unknown>[] = Array.isArray(res.data.data) ? res.data.data : [];
+  return rawProducts.map(adaptProduct);
+}
+
+/**
+ * Products the admin has marked as Featured (is_featured) in the backend.
+ * Returns an empty array if none are curated yet.
+ */
 export async function getFeatured(limit = 8): Promise<Product[]> {
   if (USE_MOCKS) {
     await delay(80);
-    return [...mockProducts].sort((a, b) => (a.sale_price ? -1 : 1)).slice(0, limit);
+    const featured = mockProducts.filter((p) => p.is_featured);
+    return (featured.length ? featured : mockProducts).slice(0, limit);
   }
-  // Backend doesn't have a /featured endpoint – return latest products
   try {
-    const res = await apiClient.get("/products", { params: { per_page: limit } });
-    const rawProducts: Record<string, unknown>[] = Array.isArray(res.data.data) ? res.data.data : [];
-    return rawProducts.map(adaptProduct);
+    return await fetchProductList({ featured: 1, per_page: limit });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Products the admin has marked as Best Seller (is_best_seller) in the backend.
+ * Falls back to the latest products so the homepage section is never empty
+ * before any are curated.
+ */
+export async function getBestSellers(limit = 8): Promise<Product[]> {
+  if (USE_MOCKS) {
+    await delay(80);
+    const sellers = mockProducts.filter((p) => p.is_best_seller);
+    return (sellers.length ? sellers : mockProducts).slice(0, limit);
+  }
+  try {
+    const sellers = await fetchProductList({ best_seller: 1, per_page: limit });
+    if (sellers.length > 0) return sellers;
+    return await fetchProductList({ per_page: limit });
   } catch {
     return [];
   }
