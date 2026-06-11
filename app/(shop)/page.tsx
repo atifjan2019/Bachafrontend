@@ -5,17 +5,22 @@ import { HeroSlider } from "@/components/home/HeroSlider";
 import { ProductCard } from "@/components/product/ProductCard";
 import { getCategories } from "@/lib/api/categories";
 import { getFeatured, getBestSellers } from "@/lib/api/products";
+import { getSettings, type Settings } from "@/lib/api/settings";
 import { formatPKR } from "@/lib/utils/format";
+import { NewsletterForm } from "@/components/home/NewsletterForm";
 import {
   Truck,
-  ShieldCheck,
-  RefreshCw,
+  Banknote,
+  MessageCircle,
+  BadgeCheck,
   Sparkles,
   ArrowRight,
   ArrowUpRight,
   Gem,
   Scissors,
   Feather,
+  Instagram,
+  Facebook,
 } from "lucide-react";
 
 export const revalidate = 0;
@@ -43,12 +48,34 @@ const BESTSELLER_LABELS = [
   "New Arrival",
 ];
 
+// Trust badges shown in the "Why customers trust Bacha Stylo" section.
+const TRUST_POINTS = [
+  { icon: Truck, title: "Nationwide Delivery" },
+  { icon: Banknote, title: "Cash on Delivery" },
+  { icon: MessageCircle, title: "WhatsApp Support" },
+  { icon: Sparkles, title: "New Weekly Arrivals" },
+  { icon: BadgeCheck, title: "Carefully Curated" },
+];
+
 export default async function HomePage() {
-  const [categories, featuredProducts, bestSellers] = await Promise.all([
+  const [categories, featuredProducts, bestSellers, settings] = await Promise.all([
     getCategories(),
     getFeatured(3),
     getBestSellers(8),
+    getSettings().catch(() => ({}) as Settings),
   ]);
+
+  // Heritage visual for the Traditional Collection highlight — a real category
+  // image when available, otherwise a branded gradient panel.
+  const heritageCategory =
+    categories.find((c) => /tradition|heritage|waistcoat|shawl/i.test(c.slug)) ?? categories[0];
+
+  // Social links are managed by the admin in Settings.
+  const socials = [
+    { name: "Instagram", handle: "@bachastylo", href: settings.instagram_url, icon: Instagram },
+    { name: "Facebook", handle: "/bachastylo", href: settings.facebook_url, icon: Facebook },
+    { name: "TikTok", handle: "@bachastylo", href: settings.tiktok_url, icon: TikTokIcon },
+  ];
 
   // Featured Collection spotlights: prefer admin-curated featured products
   // (real product photography). If none are flagged yet, fall back to the
@@ -348,31 +375,134 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── VALUE PROPS ──────────────────────────────────────── */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-white border-t border-ink-10">
+      {/* ─── TRUST ────────────────────────────────────────────── */}
+      <section className="border-t border-ink-10 bg-white py-16 sm:py-20 lg:py-28">
         <div className="container-shop">
-          <div className="grid grid-cols-2 lg:grid-cols-4 border border-ink-10 [&>*]:border-ink-10 [&>*:nth-child(n+3)]:border-t [&>*:nth-child(2)]:border-l [&>*:nth-child(4)]:border-l lg:[&>*:nth-child(n+3)]:border-t-0 lg:[&>*:not(:first-child)]:border-l">
-            <ValueProp
-              title="Free Shipping"
-              sub="On orders over Rs. 5,000"
-              icon={<Truck className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} />}
-            />
-            <ValueProp
-              title="Easy Returns"
-              sub="14 days, no questions"
-              icon={<RefreshCw className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} />}
-            />
-            <ValueProp
-              title="Secure Checkout"
-              sub="COD · JazzCash · Easypaisa"
-              icon={<ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} />}
-            />
-            <ValueProp
-              title="New Weekly"
-              sub="Fresh drops every Thursday"
-              icon={<Sparkles className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} />}
-            />
+          <SectionHeading
+            eyebrow="Why Bacha Stylo"
+            title="Why customers trust Bacha Stylo"
+            subtitle="A premium shopping experience built on quality products, dependable service, and customer satisfaction."
+            align="center"
+          />
+          <div className="mt-12 grid grid-cols-2 gap-4 sm:mt-14 sm:gap-5 md:grid-cols-3 lg:grid-cols-5">
+            {TRUST_POINTS.map((t) => (
+              <div
+                key={t.title}
+                className="group flex flex-col items-center gap-4 border border-ink-10 bg-white px-5 py-8 text-center transition-all duration-300 hover:border-brand-red/40 hover:shadow-[0_20px_40px_-20px_rgba(20,20,20,0.18)] sm:px-6 sm:py-10"
+              >
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-ink-5 text-brand-red transition-colors duration-300 group-hover:bg-brand-red group-hover:text-white">
+                  <t.icon className="h-6 w-6" strokeWidth={1.5} />
+                </div>
+                <h3 className="text-[12px] font-bold uppercase tracking-[0.12em] text-brand-black sm:text-[13px]">
+                  {t.title}
+                </h3>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
+
+      {/* ─── TRADITIONAL COLLECTION HIGHLIGHT ─────────────────── */}
+      <section className="relative overflow-hidden bg-brand-black py-16 text-white sm:py-24 lg:py-32">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(232,29,37,0.2)_0%,transparent_55%)]" />
+
+        <div className="container-shop relative grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          {/* Image */}
+          <div className="group relative order-2 aspect-[4/5] overflow-hidden sm:aspect-[16/11] lg:order-1 lg:aspect-[4/5]">
+            <CollectionImage
+              src={settings.home_highlight_image || heritageCategory?.image}
+              alt="Traditional Pakistani wear"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              fallbackLabel={heritageCategory?.name ?? "Heritage"}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-black/70 via-transparent to-transparent" />
+            <div className="absolute left-0 top-0 h-16 w-16 border-l-2 border-t-2 border-brand-red" />
+            <div className="absolute bottom-0 right-0 h-16 w-16 border-b-2 border-r-2 border-brand-red" />
+          </div>
+
+          {/* Copy */}
+          <div className="order-1 lg:order-2">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="h-[2px] w-10 bg-brand-red" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+                Heritage
+              </span>
+            </div>
+            <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-tightest sm:text-5xl lg:text-6xl">
+              {settings.home_highlight_title ? (
+                settings.home_highlight_title
+              ) : (
+                <>
+                  Traditional wear with{" "}
+                  <span className="italic text-brand-red">modern elegance.</span>
+                </>
+              )}
+            </h2>
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-white/70 sm:text-lg">
+              {settings.home_highlight_description ||
+                "Explore premium waistcoats, clothes, authentic Chitrali pakol caps, elegant shawls, fragrances, and timeless accessories inspired by Pakistani heritage."}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-2.5">
+              {["Waistcoats", "Chitrali Pakol", "Shawls", "Fragrances", "Accessories"].map((tag) => (
+                <span
+                  key={tag}
+                  className="border border-white/15 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <div className="mt-9">
+              <Link
+                href={settings.home_highlight_link || "/products"}
+                className="group inline-flex items-center gap-3 bg-brand-red px-8 py-5 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-500 hover:bg-white hover:text-brand-black"
+              >
+                {settings.home_highlight_button || "View Collection"}
+                <ArrowUpRight
+                  className="h-4 w-4 transition-transform group-hover:rotate-45"
+                  strokeWidth={2.5}
+                />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SOCIAL MEDIA ─────────────────────────────────────── */}
+      <section className="bg-white py-16 sm:py-20 lg:py-28">
+        <div className="container-shop">
+          <SectionHeading
+            eyebrow="@bachastylo"
+            title="Experience the Bacha Stylo lifestyle."
+            subtitle="Follow us for new arrivals, customer reviews, styling inspiration, behind-the-scenes moments, and exclusive product highlights."
+            align="center"
+          />
+          <div className="mt-12 grid gap-4 sm:mt-14 sm:grid-cols-3 sm:gap-5">
+            {socials.map((s) => (
+              <SocialCard key={s.name} {...s} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── NEWSLETTER ───────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-brand-black py-20 text-white sm:py-24 lg:py-28">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,29,37,0.2)_0%,transparent_60%)]" />
+
+        <div className="container-shop relative">
+          <SectionHeading
+            eyebrow="Newsletter"
+            title="Get seasonal access to new arrivals."
+            subtitle="Join the Bacha Stylo community for exclusive launches, seasonal collections, and premium style updates."
+            align="center"
+            variant="dark"
+          />
+          <div className="mt-8 sm:mt-10">
+            <NewsletterForm />
+          </div>
+          <p className="mt-4 text-center text-[11px] uppercase tracking-[0.18em] text-white/40">
+            No spam — unsubscribe anytime
+          </p>
         </div>
       </section>
     </div>
@@ -416,29 +546,48 @@ function CollectionImage({
   );
 }
 
-function ValueProp({
-  title,
-  sub,
-  icon,
-}: {
-  title: string;
-  sub: string;
-  icon: React.ReactNode;
-}) {
+/** TikTok glyph — lucide has no TikTok icon, so use a minimal inline SVG. */
+function TikTokIcon({ className }: { className?: string; strokeWidth?: number }) {
   return (
-    <div className="group relative p-5 sm:p-7 lg:p-10 bg-white transition-all duration-500 hover:bg-brand-black overflow-hidden">
-      <div className="absolute inset-0 bg-brand-red -translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
-      <div className="relative z-10">
-        <div className="h-12 w-12 sm:h-14 sm:w-14 flex items-center justify-center bg-brand-red/10 text-brand-red group-hover:bg-white group-hover:text-brand-red transition-colors duration-500 mb-4 sm:mb-5">
-          {icon}
-        </div>
-        <h3 className="text-sm sm:text-base font-bold text-brand-black group-hover:text-white transition-colors duration-500 mb-1 sm:mb-1.5 uppercase tracking-wider">
-          {title}
-        </h3>
-        <p className="text-xs sm:text-sm text-ink-50 group-hover:text-white/80 transition-colors duration-500 leading-relaxed">
-          {sub}
-        </p>
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M16.6 5.82A4.28 4.28 0 0 1 15.5 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12V9.81a5.79 5.79 0 0 0-.78-.06 5.8 5.8 0 1 0 5.8 5.8V9.01a7.3 7.3 0 0 0 4.29 1.38V7.3a4.28 4.28 0 0 1-3.31-1.48z" />
+    </svg>
+  );
+}
+
+function SocialCard({
+  name,
+  handle,
+  href,
+  icon: Icon,
+}: {
+  name: string;
+  handle: string;
+  href?: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+}) {
+  const inner = (
+    <div className="group relative flex aspect-[4/3] flex-col items-center justify-center gap-4 overflow-hidden bg-gradient-to-br from-brand-black via-brand-black-soft to-[#241015] p-8 text-center text-white transition-transform duration-500 hover:-translate-y-1">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,29,37,0.18)_0%,transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 text-brand-red transition-colors duration-500 group-hover:bg-brand-red group-hover:text-white">
+        <Icon className="h-7 w-7" strokeWidth={1.5} />
       </div>
+      <div className="relative">
+        <h3 className="font-display text-xl font-bold">{name}</h3>
+        <p className="mt-1 text-xs text-white/60">{handle}</p>
+      </div>
+      <span className="relative mt-1 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/80 transition-colors group-hover:text-brand-red">
+        Follow
+        <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </span>
     </div>
+  );
+
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      {inner}
+    </a>
+  ) : (
+    inner
   );
 }

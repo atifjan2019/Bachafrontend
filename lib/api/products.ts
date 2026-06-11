@@ -99,6 +99,15 @@ export async function getProducts(params: ProductListParams = {}): Promise<Produ
     await delay(150);
     let list = [...mockProducts];
     if (params.category) list = list.filter((p) => p.category.slug === params.category);
+    if (params.search) {
+      const q = params.search.toLowerCase();
+      list = list.filter(
+        (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
+      );
+    }
+    if (params.featured) list = list.filter((p) => p.is_featured);
+    if (params.best_seller) list = list.filter((p) => p.is_best_seller);
+    if (params.is_new) list = list.filter((p) => p.is_new);
     if (typeof params.min_price === "number")
       list = list.filter((p) => (p.sale_price ?? p.price) >= params.min_price!);
     if (typeof params.max_price === "number")
@@ -126,6 +135,10 @@ export async function getProducts(params: ProductListParams = {}): Promise<Produ
   // Build query params matching backend expectations
   const apiParams: Record<string, string | number> = {};
   if (params.category) apiParams.category = params.category;
+  if (params.search) apiParams.search = params.search;
+  if (params.featured) apiParams.featured = 1;
+  if (params.best_seller) apiParams.best_seller = 1;
+  if (params.is_new) apiParams.is_new = 1;
   if (params.per_page) apiParams.per_page = params.per_page;
   if (params.page) apiParams.page = params.page;
   // Backend doesn't support min_price/max_price/sort natively — pass what it accepts

@@ -46,8 +46,25 @@ export type ProductListResponse = {
   meta: { current_page: number; last_page: number; total: number };
 };
 
+export type Review = {
+  id: number;
+  author_name: string;
+  rating: number;
+  comment: string | null;
+  created_at?: string;
+};
+
+export type ReviewsResponse = {
+  data: Review[];
+  meta: { count: number; average: number };
+};
+
 export type ProductListParams = {
   category?: string;
+  search?: string;
+  featured?: boolean;
+  best_seller?: boolean;
+  is_new?: boolean;
   min_price?: number;
   max_price?: number;
   sort?: "newest" | "price_asc" | "price_desc";

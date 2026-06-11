@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProduct, getRelated } from "@/lib/api/products";
+import { getSettings } from "@/lib/api/settings";
+import { getReviews } from "@/lib/api/reviews";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductGrid } from "@/components/product/ProductGrid";
+import { ProductReviews } from "@/components/product/ProductReviews";
 import { GoldDivider } from "@/components/common/GoldDivider";
 import { ProductDetailActions } from "./ProductDetailActions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -11,7 +14,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return notFound();
-  const related = await getRelated(product.slug, product.category.slug, 4);
+  const [related, settings, reviews] = await Promise.all([
+    getRelated(product.slug, product.category.slug, 4),
+    getSettings().catch(() => null),
+    getReviews(product.slug),
+  ]);
 
   return (
     <div className="container-shop py-6 lg:py-12">
@@ -28,7 +35,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
         <ProductGallery images={product.images} name={product.name} />
         <div>
-          <ProductDetailActions product={product} />
+          <ProductDetailActions product={product} whatsappNumber={settings?.whatsapp_number} />
 
           <div className="mt-8">
             <Accordion type="single" collapsible defaultValue="desc">
@@ -44,17 +51,17 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                       <thead className="text-brand-black">
                         <tr>
                           <th className="py-2 pr-3">Size</th>
-                          <th className="py-2 pr-3">Age</th>
                           <th className="py-2 pr-3">Chest (in)</th>
+                          <th className="py-2 pr-3">Waist (in)</th>
                           <th className="py-2">Length (in)</th>
                         </tr>
                       </thead>
                       <tbody className="text-muted">
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">2-3Y</td><td className="pr-3">2-3 years</td><td className="pr-3">22</td><td>18</td></tr>
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">4-5Y</td><td className="pr-3">4-5 years</td><td className="pr-3">24</td><td>20</td></tr>
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">6-7Y</td><td className="pr-3">6-7 years</td><td className="pr-3">26</td><td>23</td></tr>
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">8-9Y</td><td className="pr-3">8-9 years</td><td className="pr-3">28</td><td>26</td></tr>
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">10-11Y</td><td className="pr-3">10-11 years</td><td className="pr-3">30</td><td>28</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">S</td><td className="pr-3">36–38</td><td className="pr-3">30–32</td><td>27</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">M</td><td className="pr-3">38–40</td><td className="pr-3">32–34</td><td>28</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">L</td><td className="pr-3">40–42</td><td className="pr-3">34–36</td><td>29</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">XL</td><td className="pr-3">42–44</td><td className="pr-3">36–38</td><td>30</td></tr>
+                        <tr className="border-t border-border"><td className="py-1.5 pr-3">XXL</td><td className="pr-3">44–46</td><td className="pr-3">38–40</td><td>31</td></tr>
                       </tbody>
                     </table>
                   </div>
@@ -78,6 +85,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
       </div>
+
+      <ProductReviews
+        slug={product.slug}
+        initialReviews={reviews.data}
+        initialAverage={reviews.meta.average}
+        initialCount={reviews.meta.count}
+      />
 
       {related.length > 0 && (
         <section className="mt-16 lg:mt-24">

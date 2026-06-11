@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getProducts } from "@/lib/api/products";
 import { getCategories } from "@/lib/api/categories";
@@ -9,17 +10,34 @@ import { PriceRangeSlider } from "@/components/filters/PriceRangeSlider";
 import { SortDropdown } from "@/components/filters/SortDropdown";
 import { MobileFilterSheet } from "@/components/filters/MobileFilterSheet";
 import { Button } from "@/components/ui/button";
-import { SlidersHorizontal, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { SlidersHorizontal, X, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/common/LoadingSkeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHero } from "@/components/common/PageHero";
 import type { Category, Product } from "@/types";
 
-export default function ProductsPage() {
+type Collection = "all" | "featured" | "best_seller" | "new";
+
+const COLLECTIONS: { key: Collection; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "featured", label: "Featured" },
+  { key: "best_seller", label: "Best Sellers" },
+  { key: "new", label: "New Arrivals" },
+];
+
+function ProductsPageContent() {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCats, setSelectedCats] = useState<string[]>([]);
+  const [selectedCats, setSelectedCats] = useState<string[]>(
+    categoryParam ? [categoryParam] : []
+  );
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [collection, setCollection] = useState<Collection>("all");
   const [price, setPrice] = useState<[number, number]>([0, 15000]);
   const [sort, setSort] = useState<"newest" | "price_asc" | "price_desc">("newest");
   const [page, setPage] = useState(1);
@@ -31,25 +49,40 @@ export default function ProductsPage() {
     getCategories().then(setCategories);
   }, []);
 
+  // Drive the category filter from the ?category= URL param (e.g. the mega-menu
+  // links to /products?category=waistcoats). Re-syncs on client navigation.
+  useEffect(() => {
+    setSelectedCats(categoryParam ? [categoryParam] : []);
+  }, [categoryParam]);
+
+  // Debounce the search box so we don't fire a request on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
   // Reset to the first page whenever filters/sort change so we don't request
   // a page number that no longer exists in the filtered result set.
   useEffect(() => {
     setPage(1);
-  }, [selectedCats, price, sort]);
+  }, [selectedCats, price, sort, debouncedSearch, collection]);
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
+    const base = {
+      search: debouncedSearch || undefined,
+      featured: collection === "featured" || undefined,
+      best_seller: collection === "best_seller" || undefined,
+      is_new: collection === "new" || undefined,
+      min_price: price[0],
+      max_price: price[1],
+      sort,
+    };
     async function run() {
       try {
         if (selectedCats.length === 0) {
-          const res = await getProducts({
-            min_price: price[0],
-            max_price: price[1],
-            sort,
-            page,
-            per_page: 12,
-          });
+          const res = await getProducts({ ...base, page, per_page: 12 });
           if (mounted) {
             setProducts(res.data);
             setLastPage(res.meta.last_page);
@@ -58,14 +91,7 @@ export default function ProductsPage() {
         } else {
           const all = await Promise.all(
             selectedCats.map((c) =>
-              getProducts({
-                category: c,
-                min_price: price[0],
-                max_price: price[1],
-                sort,
-                page: 1,
-                per_page: 60,
-              })
+              getProducts({ ...base, category: c, page: 1, per_page: 60 })
             )
           );
           const merged = all.flatMap((r) => r.data);
@@ -86,7 +112,7 @@ export default function ProductsPage() {
     return () => {
       mounted = false;
     };
-  }, [selectedCats, price, sort, page]);
+  }, [selectedCats, price, sort, page, debouncedSearch, collection]);
 
   const filters = useMemo(
     () => (
@@ -120,22 +146,55 @@ export default function ProductsPage() {
 
       {/* Toolbar */}
       <div className="sticky top-14 z-30 bg-white border-b border-ink-10">
-        <div className="container-shop flex items-center justify-between gap-3 py-3">
+        <div className="container-shop py-3 space-y-3">
+          {/* Row: search + sort + mobile filter */}
           <div className="flex items-center gap-3">
             <button
-              className="lg:hidden inline-flex items-center gap-2 text-sm text-brand-black hover:text-ink-70 transition"
+              className="lg:hidden inline-flex items-center gap-2 text-sm text-brand-black hover:text-ink-70 transition shrink-0"
               onClick={() => setMobileOpen(true)}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              Filters
+              <span className="sr-only sm:not-sr-only">Filters</span>
               {activeFilterCount > 0 && (
                 <span className="h-5 min-w-5 px-1 rounded-full bg-brand-black text-white text-[10px] flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
             </button>
+            <div className="relative flex-1 max-w-xl">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-30" />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search products…"
+                aria-label="Search products"
+                className="w-full border border-ink-10 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-brand-black"
+              />
+            </div>
+            <SortDropdown value={sort} onChange={setSort} />
+          </div>
+
+          {/* Row: collection tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-0.5">
+            {COLLECTIONS.map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setCollection(c.key)}
+                className={`whitespace-nowrap border px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] transition-colors ${
+                  collection === c.key
+                    ? "border-brand-black bg-brand-black text-white"
+                    : "border-ink-10 bg-white text-ink-70 hover:border-brand-black"
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="hidden lg:flex items-center justify-between gap-3">
             {/* Active filter chips (desktop) */}
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {selectedCats.map((slug) => {
                 const cat = categories.find((c) => c.slug === slug);
                 return (
@@ -171,7 +230,6 @@ export default function ProductsPage() {
               )}
             </div>
           </div>
-          <SortDropdown value={sort} onChange={setSort} />
         </div>
       </div>
 
@@ -248,5 +306,14 @@ export default function ProductsPage() {
         {filters}
       </MobileFilterSheet>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  // useSearchParams requires a Suspense boundary in the app router.
+  return (
+    <Suspense fallback={null}>
+      <ProductsPageContent />
+    </Suspense>
   );
 }

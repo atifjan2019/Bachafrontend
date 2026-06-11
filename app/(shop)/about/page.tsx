@@ -1,306 +1,347 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getSettings } from "@/lib/api/settings";
 import {
-  Heart,
-  Leaf,
-  Shield,
-  Users,
-  Star,
-  Scissors,
   ArrowUpRight,
-  Sparkles,
+  Crown,
+  ClipboardList,
+  Megaphone,
+  Headphones,
+  Palette,
   CheckCircle2,
+  Tag,
+  Gem,
+  ShieldCheck,
+  Landmark,
+  Repeat,
+  Quote,
   MapPin,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About — Bacha Stylo",
+  title: "Foundation & Vision — Bacha Stylo",
   description:
-    "The story behind Bacha Stylo — small-batch kids' clothing designed and made in Pakistan.",
+    "The people, vision, and values behind Bacha Stylo — a trusted Pakistani fashion and lifestyle brand rooted in quality, honesty, and modern elegance.",
 };
 
-export default function AboutPage() {
+const TEAM_ROLES = [
+  { icon: Crown, title: "Founder / CEO", desc: "Vision & leadership" },
+  { icon: ClipboardList, title: "Operations Manager", desc: "Fulfilment & logistics" },
+  { icon: Megaphone, title: "Marketing Manager", desc: "Growth & brand reach" },
+  { icon: Headphones, title: "Customer Support Lead", desc: "Care & after-sales" },
+  { icon: Palette, title: "Creative / Brand Director", desc: "Design & identity" },
+];
+
+const MISSION = [
+  "Deliver high-quality fashion, fragrances, beauty care, and lifestyle products at fair prices.",
+  "Build trust through honest and transparent business practices.",
+  "Make traditional and modern lifestyle products accessible to all.",
+  "Represent Pakistani culture with elegance and professionalism.",
+  "Ensure consistent customer satisfaction through service and quality.",
+];
+
+const VALUES = [
+  { icon: Tag, title: "Honest Pricing", desc: "Fair prices with no inflated margins or misleading offers." },
+  { icon: Gem, title: "Quality Craftsmanship", desc: "Carefully selected materials and refined finishing on every piece." },
+  { icon: ShieldCheck, title: "Customer Trust", desc: "Transparent service that puts our customers first, always." },
+  { icon: Landmark, title: "Cultural Authenticity", desc: "Pakistani heritage represented with elegance and pride." },
+  { icon: Repeat, title: "Consistent Service", desc: "Dependable quality and support, order after order." },
+];
+
+export default async function AboutPage() {
+  const settings = await getSettings().catch(() => null);
+  const waNumber = settings?.whatsapp_number?.replace(/[^0-9]/g, "");
+  const waHref = waNumber ? `https://wa.me/${waNumber}` : "/contact";
+
   return (
     <div className="flex flex-col bg-white">
-      {/* ─── HERO ─────────────────────────────────────────────── */}
-      <section className="relative min-h-[70vh] sm:min-h-[80vh] lg:min-h-[90vh] overflow-hidden bg-brand-black text-white">
-        <Image
-          src="/images/about/hero.png"
-          alt="Children in Bacha Stylo clothing"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-50"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-black via-brand-black/80 to-brand-red/30" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(232,29,37,0.3)_0%,transparent_55%)]" />
+      {/* ─── 1. HERO ──────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-brand-black py-24 text-white sm:py-32 lg:py-40">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(232,29,37,0.28)_0%,transparent_55%)]" />
+        <div className="absolute left-0 right-0 top-0 h-[3px] bg-gradient-to-r from-brand-red via-brand-red/50 to-transparent" />
 
-        {/* Top accent */}
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-red via-brand-red/50 to-transparent" />
-
-        {/* Side rotating label */}
-        <div className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 rotate-90 origin-center gap-4 text-[10px] uppercase tracking-[0.42em] text-white/40 font-semibold">
-          <span>Since 2020</span>
-          <span className="text-brand-red">◆</span>
-          <span>Lahore, Pakistan</span>
-        </div>
-
-        <div className="relative h-full flex flex-col justify-end container-shop pb-16 sm:pb-20 lg:pb-28 min-h-[70vh] sm:min-h-[80vh] lg:min-h-[90vh]">
-          <div className="flex items-center gap-3 mb-6">
+        <div className="container-shop relative max-w-4xl">
+          <div className="mb-6 flex items-center gap-3">
             <span className="h-[2px] w-10 bg-brand-red" />
-            <span className="text-[11px] uppercase tracking-[0.28em] text-brand-red font-bold">
-              Our Story
+            <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+              Foundation &amp; Vision
             </span>
           </div>
-          <h1 className="font-display font-bold tracking-tightest leading-[0.94] text-[clamp(2.5rem,8vw,7rem)] text-white max-w-4xl">
-            Clothes kids
-            <br />
-            actually{" "}
-            <span className="italic text-brand-red">want</span>
-            <br />
-            to wear.
+          <h1 className="font-display font-bold tracking-tightest leading-[0.96] text-[clamp(2.25rem,6.5vw,5.5rem)] text-white">
+            The people behind{" "}
+            <span className="italic text-brand-red">Bacha Stylo.</span>
           </h1>
-          <p className="mt-6 sm:mt-8 text-base sm:text-lg lg:text-xl text-white/70 max-w-2xl leading-relaxed">
-            Small-batch kids&apos; clothing designed and made in Pakistan — built
-            for play, priced for parents.
+          <p className="mt-7 max-w-2xl text-base leading-relaxed text-white/70 sm:text-lg lg:text-xl">
+            A dedicated team working with passion to build a trusted Pakistani fashion brand
+            rooted in quality, honesty, and modern elegance.
           </p>
         </div>
       </section>
 
-      {/* ─── MISSION MARQUEE ─── */}
-      <section className="relative bg-brand-red text-white overflow-hidden py-4 sm:py-5 border-y-2 border-brand-black">
-        <div className="flex animate-marquee whitespace-nowrap">
-          {[...Array(10)].map((_, i) => (
-            <div key={i} className="flex items-center gap-6 sm:gap-12 px-6">
-              {[
-                "Premium Fabrics",
-                "Made in Pakistan",
-                "Honest Pricing",
-                "Safe for Skin",
-              ].map((t, j) => (
-                <span key={j} className="flex items-center gap-3 sm:gap-5">
-                  <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
-                  <span className="font-display text-lg sm:text-2xl lg:text-3xl font-black uppercase tracking-tight">
-                    {t}
-                  </span>
-                  <span className="text-lg sm:text-2xl">✦</span>
-                </span>
-              ))}
+      {/* ─── 2. TEAM STRUCTURE ────────────────────────────────── */}
+      <section className="bg-white py-20 sm:py-24 lg:py-32">
+        <div className="container-shop">
+          <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-16">
+            <div className="mb-5 flex items-center justify-center gap-3">
+              <span className="h-[2px] w-8 bg-brand-red" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+                Our Team
+              </span>
+              <span className="h-[2px] w-8 bg-brand-red" />
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── WHY WE EXIST ─── */}
-      <section className="py-20 sm:py-24 lg:py-36 bg-white relative overflow-hidden">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-64 bg-brand-red hidden lg:block" />
-
-        <div className="container-shop grid lg:grid-cols-12 gap-12 items-start">
-          <div className="lg:col-span-4">
-            <div className="sticky top-32">
-              <div className="flex items-center gap-3 mb-5">
-                <span className="h-[2px] w-8 bg-brand-red" />
-                <span className="text-[11px] uppercase tracking-[0.28em] text-brand-red font-bold">
-                  Why We Exist
-                </span>
-              </div>
-              <div className="font-display text-[10rem] leading-none font-black text-brand-red/10 hidden lg:block">
-                01
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-8">
-            <h2 className="font-display font-bold tracking-tightest leading-[1] text-4xl sm:text-5xl lg:text-7xl text-brand-black">
-              Kids grow fast.
-              <br />
-              <span className="italic text-brand-red">Their clothes</span>
-              <br />
-              should keep up.
+            <h2 className="font-display text-4xl font-bold tracking-tightest text-brand-black sm:text-5xl">
+              Our Team Structure
             </h2>
-            <p className="mt-8 sm:mt-10 text-lg sm:text-xl text-ink-70 max-w-2xl leading-relaxed">
-              We believe every child deserves well-made, thoughtfully designed clothes at honest
-              prices. No compromises on comfort, quality, or the people who make them.
+            <p className="mt-5 text-base leading-relaxed text-ink-70 sm:text-lg">
+              Meet the people who manage, design, and deliver the Bacha Stylo experience.
             </p>
           </div>
-        </div>
-      </section>
 
-      {/* ─── ORIGIN STORY ─── */}
-      <section className="relative bg-brand-black text-white overflow-hidden py-20 sm:py-24 lg:py-36">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(232,29,37,0.2)_0%,transparent_55%)]" />
-
-        <div className="container-shop relative grid lg:grid-cols-2 gap-12 sm:gap-16 lg:gap-24 items-center">
-          <div className="relative max-w-lg mx-auto lg:mx-0 w-full order-2 lg:order-1">
-            <div className="relative aspect-[4/5] w-full overflow-hidden">
-              <Image
-                src="/images/about/craftsmanship.png"
-                alt="Artisan craftsmanship"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-brand-red/20" />
-            </div>
-            <div className="absolute -top-3 sm:-top-4 -left-3 sm:-left-4 w-14 sm:w-20 h-14 sm:h-20 border-t-2 border-l-2 border-brand-red" />
-            <div className="absolute -bottom-3 sm:-bottom-4 -right-3 sm:-right-4 w-14 sm:w-20 h-14 sm:h-20 border-b-2 border-r-2 border-brand-red" />
-            <div className="absolute top-4 sm:top-6 -right-3 sm:-right-6 bg-brand-red text-white px-4 sm:px-6 py-2 sm:py-3 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] sm:tracking-[0.22em] font-bold shadow-red-glow-lg flex items-center gap-2">
-              <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.5} /> Lahore, PK
-            </div>
-          </div>
-
-          <div className="order-1 lg:order-2">
-            <div className="flex items-center gap-3 mb-5 sm:mb-6">
-              <span className="h-[2px] w-8 sm:w-10 bg-brand-red" />
-              <span className="text-[11px] uppercase tracking-[0.28em] text-brand-red font-bold">
-                The Origin
-              </span>
-            </div>
-
-            <h2 className="font-display font-bold tracking-tightest leading-[0.98] text-4xl sm:text-5xl lg:text-6xl">
-              From a single
-              <br />
-              <span className="italic text-brand-red">sewing machine</span>
-              <br />
-              to a brand families trust.
-            </h2>
-
-            <div className="mt-8 sm:mt-10 space-y-5 text-base sm:text-lg text-white/70 leading-relaxed max-w-lg">
-              <p>
-                It started with a frustrated parent and a sewing machine. Off-the-shelf kids&apos;
-                clothes were either too flimsy, too expensive, or both. So we started making our
-                own — testing fabrics, perfecting fits, listening.
-              </p>
-              <p>
-                Word spread, orders grew, and Bacha Stylo was born. Today we work with a tight
-                circle of local artisans in Lahore, producing in small batches so nothing goes
-                to waste — and every piece gets the attention it deserves.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── VALUES ─────────────────────────────────────── */}
-      <section className="py-20 sm:py-24 lg:py-36 bg-ink-5 relative noise-overlay">
-        <div className="container-shop relative">
-          <div className="text-center max-w-3xl mx-auto mb-14 sm:mb-20">
-            <div className="flex items-center justify-center gap-3 mb-5">
-              <span className="h-[2px] w-8 bg-brand-red" />
-              <span className="text-[11px] uppercase tracking-[0.28em] text-brand-red font-bold">
-                What Drives Us
-              </span>
-              <span className="h-[2px] w-8 bg-brand-red" />
-            </div>
-            <h2 className="font-display font-bold tracking-tightest leading-[1.02] text-4xl sm:text-5xl lg:text-6xl text-brand-black">
-              Six ideas we
-              <br />
-              <span className="italic text-brand-red">won&apos;t compromise</span> on.
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-0 border border-ink-10 bg-white">
-            {[
-              { icon: Shield, title: "Built to Last", body: "Reinforced stitching, generous seam allowances, pre-washed fabrics that soften with age." },
-              { icon: Scissors, title: "Small Batch", body: "Less waste, better quality control, and the ability to bring back styles you love." },
-              { icon: Leaf, title: "Kind to Skin", body: "OEKO-TEX certified dyes, natural fibre blends, chemical-free finishing." },
-              { icon: Heart, title: "Honest Pricing", body: "No middlemen, no inflated margins. Quality wear that doesn't require a second thought." },
-              { icon: Users, title: "Local Makers", body: "Every piece is stitched in Pakistan by skilled artisans paid above market rate." },
-              { icon: Star, title: "Parent-Approved", body: "Designed by parents, tested by kids. Real feedback shapes every collection." },
-            ].map((v, i) => (
-              <Value key={i} index={i} icon={<v.icon className="h-5 w-5" strokeWidth={2} />} title={v.title} body={v.body} />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
+            {TEAM_ROLES.map((role) => (
+              <div
+                key={role.title}
+                className="group overflow-hidden border border-ink-10 bg-white transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-24px_rgba(20,20,20,0.4)]"
+              >
+                <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-brand-black via-brand-black-soft to-[#241015]">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,29,37,0.22)_0%,transparent_60%)]" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <role.icon
+                      className="h-12 w-12 text-white/25 transition-transform duration-500 group-hover:scale-110"
+                      strokeWidth={1.25}
+                    />
+                  </div>
+                  <div className="absolute left-0 top-0 h-0.5 w-0 bg-brand-red transition-all duration-500 group-hover:w-full" />
+                </div>
+                <div className="p-4 text-center sm:p-5">
+                  <h3 className="font-display text-base font-bold leading-tight text-brand-black sm:text-lg">
+                    {role.title}
+                  </h3>
+                  <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-red">
+                    {role.desc}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── STATS BAND ─── */}
-      <section className="relative bg-brand-black text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,29,37,0.18)_0%,transparent_55%)]" />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-red to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-red to-transparent" />
-
-        <div className="container-shop grid grid-cols-2 lg:grid-cols-4 py-16 sm:py-20 lg:py-24 gap-8 sm:gap-10 relative z-10 divide-x divide-white/10">
-          <Stat number="12" label="Collections in 2025" />
-          <Stat number="48k+" label="Happy Families" />
-          <Stat number="100%" label="Made in Pakistan" />
-          <Stat number="14d" label="Easy Returns" />
-        </div>
-      </section>
-
-      {/* ─── PROMISE / CTA ─── */}
-      <section className="py-20 sm:py-24 lg:py-36 bg-white">
-        <div className="container-shop grid lg:grid-cols-2 gap-12 sm:gap-16 lg:gap-20 items-center">
-          <div>
-            <div className="flex items-center gap-3 mb-5 sm:mb-6">
-              <span className="h-[2px] w-8 sm:w-10 bg-brand-red" />
-              <span className="text-[11px] uppercase tracking-[0.28em] text-brand-red font-bold">
-                Our Promise
+      {/* ─── 3. FOUNDER ───────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-ink-5 py-20 sm:py-24 lg:py-32">
+        <div className="container-shop grid items-center gap-10 lg:grid-cols-12 lg:gap-16">
+          {/* Portrait */}
+          <div className="relative order-2 mx-auto w-full max-w-sm lg:order-1 lg:col-span-5">
+            <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-brand-black via-brand-black-soft to-[#2a1116]">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_40%_25%,rgba(232,29,37,0.25)_0%,transparent_60%)]" />
+              <span className="absolute inset-0 flex items-center justify-center font-display text-[7rem] font-bold leading-none text-white/10">
+                MA
               </span>
             </div>
+            <div className="absolute -left-3 -top-3 h-14 w-14 border-l-2 border-t-2 border-brand-red sm:-left-4 sm:-top-4 sm:h-20 sm:w-20" />
+            <div className="absolute -bottom-3 -right-3 h-14 w-14 border-b-2 border-r-2 border-brand-red sm:-bottom-4 sm:-right-4 sm:h-20 sm:w-20" />
+          </div>
 
-            <h2 className="font-display font-bold tracking-tightest leading-[0.98] text-4xl sm:text-5xl lg:text-6xl text-brand-black">
-              Good clothes,
-              <br />
-              <span className="italic text-brand-red">made responsibly.</span>
+          {/* Bio */}
+          <div className="order-1 lg:order-2 lg:col-span-7">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="h-[2px] w-10 bg-brand-red" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+                Founder &amp; CEO
+              </span>
+            </div>
+            <h2 className="font-display text-3xl font-bold tracking-tightest text-brand-black sm:text-4xl lg:text-5xl">
+              Muhammad Ali Shah Bacha
             </h2>
-
-            <div className="mt-8 space-y-4 sm:space-y-5 text-base sm:text-lg text-ink-70 leading-relaxed max-w-xl">
+            <div className="mt-6 space-y-4 text-base leading-relaxed text-ink-70 sm:text-lg">
               <p>
-                Every Bacha Stylo piece is cut with extra room for growth, stitched to handle real
-                life, and priced so parents never have to choose between quality and value.
+                Muhammad Ali Shah Bacha is the founder of Bacha Stylo Fashion, a fashion and
+                lifestyle brand built on years of practical experience and market understanding.
+                With over 11 years of involvement in the fashion and lifestyle industry, he has
+                focused on continuous research, product selection, and learning from real market
+                conditions to develop a strong sense of customer needs and trends.
               </p>
               <p>
-                We work directly with local makers and pay above market rate. No middlemen, no
-                markups on top of markups — just well-made clothes from our studio to your door.
+                His journey began at a very small level with limited resources, but through
+                consistency, honesty, and customer satisfaction, he gradually built trust in the
+                market — which became the foundation of the brand&apos;s growth.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="mt-8 sm:mt-10 space-y-3">
-              {[
-                { icon: Sparkles, text: "Premium pre-washed fabrics that soften with every wash" },
-                { icon: Shield, text: "Reinforced seams for active kids who never slow down" },
-                { icon: Leaf, text: "Chemical-free dyes, safe on even the most sensitive skin" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-4 group">
-                  <div className="h-10 w-10 border border-brand-red flex items-center justify-center shrink-0 text-brand-red group-hover:bg-brand-red group-hover:text-white transition-colors">
-                    <item.icon className="h-4 w-4" strokeWidth={2} />
-                  </div>
-                  <span className="text-sm sm:text-base text-ink-70">{item.text}</span>
-                </div>
+      {/* ─── 4 & 5. VISION + MISSION ──────────────────────────── */}
+      <section className="bg-white py-20 sm:py-24 lg:py-32">
+        <div className="container-shop grid gap-10 lg:grid-cols-2 lg:gap-16">
+          {/* Vision */}
+          <div className="border border-ink-10 p-8 sm:p-10 lg:p-12">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="h-[2px] w-8 bg-brand-red" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+                Our Vision
+              </span>
+            </div>
+            <h2 className="font-display text-3xl font-bold tracking-tightest text-brand-black sm:text-4xl">
+              Our Vision
+            </h2>
+            <p className="mt-6 text-base leading-relaxed text-ink-70 sm:text-lg">
+              To become a trusted Pakistani lifestyle brand that makes traditional fashion and
+              lifestyle products accessible, authentic, and affordable for everyone — without
+              compromising on quality or trust.
+            </p>
+          </div>
+
+          {/* Mission */}
+          <div className="border border-ink-10 p-8 sm:p-10 lg:p-12">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="h-[2px] w-8 bg-brand-red" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+                Our Mission
+              </span>
+            </div>
+            <h2 className="font-display text-3xl font-bold tracking-tightest text-brand-black sm:text-4xl">
+              Our Mission
+            </h2>
+            <ul className="mt-6 space-y-3.5">
+              {MISSION.map((m) => (
+                <li key={m} className="flex items-start gap-3 text-sm leading-relaxed text-ink-70 sm:text-base">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-red" strokeWidth={2} />
+                  <span>{m}</span>
+                </li>
               ))}
-            </div>
+            </ul>
+          </div>
+        </div>
+      </section>
 
-            <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link
-                href="/products"
-                className="group relative inline-flex items-center justify-center gap-3 bg-brand-red text-white px-6 sm:px-8 py-4 sm:py-5 text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.18em] transition-all duration-500 hover:bg-brand-black"
-              >
-                Shop the Collection
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" strokeWidth={2.5} />
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center gap-3 border-2 border-brand-black text-brand-black px-6 sm:px-8 py-4 sm:py-5 text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.18em] transition-all duration-300 hover:bg-brand-black hover:text-white"
-              >
-                Get in Touch
-              </Link>
+      {/* ─── 6. BRAND PROMISE ─────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-brand-black py-20 text-white sm:py-24 lg:py-28">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,29,37,0.2)_0%,transparent_60%)]" />
+        <div className="container-shop relative mx-auto max-w-3xl text-center">
+          <Quote className="mx-auto mb-6 h-10 w-10 text-brand-red" strokeWidth={1.5} />
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+            Our Brand Promise
+          </p>
+          <p className="font-display text-2xl font-bold leading-snug tracking-tight sm:text-3xl lg:text-4xl">
+            We believe fashion should never be misleading or overpriced. Our promise is simple:{" "}
+            <span className="italic text-brand-red">quality, honesty, and value</span> in every
+            product.
+          </p>
+        </div>
+      </section>
+
+      {/* ─── 7. OUR STORY ─────────────────────────────────────── */}
+      <section className="bg-white py-20 sm:py-24 lg:py-32">
+        <div className="container-shop grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          {/* Heritage visual */}
+          <div className="relative order-2 aspect-[4/5] overflow-hidden sm:aspect-[16/11] lg:order-1 lg:aspect-[4/5]">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-black via-brand-black-soft to-[#2a1116]">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(232,29,37,0.22)_0%,transparent_60%)]" />
+              <span className="absolute inset-0 flex items-center justify-center font-display text-[5rem] font-bold leading-none text-white/[0.07] sm:text-[7rem]">
+                BS
+              </span>
+            </div>
+            <div className="absolute bottom-5 left-5 inline-flex items-center gap-2 bg-brand-red px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-red-glow-lg">
+              <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} /> Lower Dir, KPK
             </div>
           </div>
 
-          <div className="relative max-w-lg mx-auto lg:mx-0 w-full">
-            <div className="relative aspect-square w-full overflow-hidden bg-ink-5">
-              <Image
-                src="/images/about/flatlay.png"
-                alt="Bacha Stylo kids clothing flatlay"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
+          {/* Story copy */}
+          <div className="order-1 lg:order-2">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="h-[2px] w-10 bg-brand-red" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+                Our Story
+              </span>
             </div>
-            <div className="absolute -top-3 sm:-top-4 -left-3 sm:-left-4 w-14 sm:w-20 h-14 sm:h-20 border-t-2 border-l-2 border-brand-red" />
-            <div className="absolute -bottom-3 sm:-bottom-4 -right-3 sm:-right-4 w-14 sm:w-20 h-14 sm:h-20 border-b-2 border-r-2 border-brand-red" />
+            <h2 className="font-display text-3xl font-bold tracking-tightest text-brand-black sm:text-4xl lg:text-5xl">
+              Rooted in tradition,{" "}
+              <span className="italic text-brand-red">built on trust.</span>
+            </h2>
+            <div className="mt-6 space-y-4 text-base leading-relaxed text-ink-70 sm:text-lg">
+              <p>
+                Bacha Stylo started from Lower Dir, KPK with a simple vision — to create a trusted
+                fashion identity rooted in tradition, honesty, and quality.
+              </p>
+              <p>
+                What began with traditional wear has now grown into a broader lifestyle brand
+                offering clothes, waistcoats, Chitrali pakols, caps, shawls, fragrances, footwear,
+                and personal care products. Every product reflects our belief in authenticity, fair
+                pricing, and customer satisfaction.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 8. VALUES ────────────────────────────────────────── */}
+      <section className="bg-ink-5 py-20 sm:py-24 lg:py-32">
+        <div className="container-shop">
+          <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-16">
+            <div className="mb-5 flex items-center justify-center gap-3">
+              <span className="h-[2px] w-8 bg-brand-red" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+                Our Values
+              </span>
+              <span className="h-[2px] w-8 bg-brand-red" />
+            </div>
+            <h2 className="font-display text-4xl font-bold tracking-tightest text-brand-black sm:text-5xl">
+              What we stand for
+            </h2>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-5">
+            {VALUES.map((v, i) => (
+              <div
+                key={v.title}
+                className="group relative border border-ink-10 bg-white p-6 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-24px_rgba(20,20,20,0.35)]"
+              >
+                <div className="mb-5 flex h-12 w-12 items-center justify-center border border-brand-red/60 text-brand-red transition-colors duration-500 group-hover:bg-brand-red group-hover:text-white">
+                  <v.icon className="h-5 w-5" strokeWidth={1.5} />
+                </div>
+                <span className="absolute right-5 top-5 font-display text-sm italic text-ink-30">
+                  0{i + 1}
+                </span>
+                <h3 className="font-display text-lg font-bold leading-tight text-brand-black">
+                  {v.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-70">{v.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 9. CLOSING CTA ───────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-brand-black py-20 text-white sm:py-24 lg:py-32">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,29,37,0.22)_0%,transparent_60%)]" />
+        <div className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand-red to-transparent" />
+
+        <div className="container-shop relative mx-auto max-w-2xl text-center">
+          <h2 className="font-display text-4xl font-bold tracking-tightest sm:text-5xl lg:text-6xl">
+            Experience the{" "}
+            <span className="italic text-brand-red">Bacha Stylo</span> standard.
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
+            Explore our collections and discover fashion built on trust, tradition, and quality.
+          </p>
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <Link
+              href="/products"
+              className="group inline-flex w-full items-center justify-center gap-3 bg-brand-red px-8 py-5 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-500 hover:bg-white hover:text-brand-black sm:w-auto"
+            >
+              Shop Collection
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" strokeWidth={2.5} />
+            </Link>
+            <a
+              href={waHref}
+              {...(waNumber ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              className="inline-flex w-full items-center justify-center gap-3 border-2 border-white/40 px-8 py-5 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:border-brand-red hover:text-brand-red sm:w-auto"
+            >
+              <WhatsAppIcon className="h-5 w-5" />
+              Contact on WhatsApp
+            </a>
           </div>
         </div>
       </section>
@@ -308,55 +349,10 @@ export default function AboutPage() {
   );
 }
 
-function Value({
-  icon,
-  title,
-  body,
-  index,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-  index: number;
-}) {
+function WhatsAppIcon({ className }: { className?: string }) {
   return (
-    <div className="group relative p-8 sm:p-10 border-ink-10 border-b sm:[&:nth-child(2n)]:border-l sm:[&:nth-child(n+3)]:border-t lg:[&:nth-child(2n)]:border-l-0 lg:[&:not(:nth-child(3n+1))]:border-l lg:[&:nth-child(n+4)]:border-t sm:[&:nth-last-child(-n+1)]:border-b-0 lg:[&:nth-last-child(-n+3)]:border-b-0 bg-white hover:bg-brand-black transition-all duration-500 overflow-hidden">
-      <div className="absolute top-0 left-0 h-1 w-0 bg-brand-red group-hover:w-full transition-all duration-500" />
-
-      <div className="relative z-10">
-        <div className="flex items-start justify-between mb-6">
-          <div className="h-14 w-14 border-2 border-brand-red text-brand-red group-hover:bg-brand-red group-hover:text-white flex items-center justify-center transition-colors">
-            {icon}
-          </div>
-          <span className="font-display text-2xl font-black text-ink-10 group-hover:text-brand-red/40 transition-colors">
-            0{index + 1}
-          </span>
-        </div>
-
-        <h3 className="font-display text-xl sm:text-2xl font-bold text-brand-black group-hover:text-white tracking-tight mb-3 transition-colors">
-          {title}
-        </h3>
-        <p className="text-sm sm:text-base text-ink-70 group-hover:text-white/70 leading-relaxed transition-colors">
-          {body}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ number, label }: { number: string; label: string }) {
-  return (
-    <div className="text-center px-2 sm:px-4">
-      <p className="font-display text-5xl sm:text-6xl lg:text-7xl font-black tracking-tightest text-white leading-none">
-        {number}
-      </p>
-      <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2">
-        <span className="h-[1px] w-4 bg-brand-red" />
-        <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-brand-red font-bold">
-          {label}
-        </p>
-        <span className="h-[1px] w-4 bg-brand-red" />
-      </div>
-    </div>
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.08 2.89 1.23 3.09c.15.2 2.12 3.24 5.13 4.54.72.31 1.28.5 1.71.64.72.23 1.37.2 1.89.12.58-.09 1.76-.72 2.01-1.42.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35zM12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.78 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2z" />
+    </svg>
   );
 }
