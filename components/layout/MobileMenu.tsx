@@ -21,11 +21,8 @@ export function MobileMenu({
       <DialogContent side="right" className="bg-white">
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <div className="flex flex-col gap-6 h-full">
-          <div className="flex items-center justify-between pb-4 border-b border-ink-10">
+          <div className="flex items-center pb-4 border-b border-ink-10">
             <BrandMark />
-            <span className="text-[10px] uppercase tracking-[0.22em] text-brand-red font-bold">
-              Menu
-            </span>
           </div>
 
           <nav className="flex flex-col">

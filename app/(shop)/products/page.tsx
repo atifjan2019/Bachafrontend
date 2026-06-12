@@ -28,6 +28,7 @@ const COLLECTIONS: { key: Collection; label: string }[] = [
 function ProductsPageContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
+  const searchParam = searchParams.get("search") ?? "";
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -35,8 +36,8 @@ function ProductsPageContent() {
   const [selectedCats, setSelectedCats] = useState<string[]>(
     categoryParam ? [categoryParam] : []
   );
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [search, setSearch] = useState(searchParam);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParam);
   const [collection, setCollection] = useState<Collection>("all");
   const [price, setPrice] = useState<[number, number]>([0, 15000]);
   const [sort, setSort] = useState<"newest" | "price_asc" | "price_desc">("newest");
@@ -54,6 +55,12 @@ function ProductsPageContent() {
   useEffect(() => {
     setSelectedCats(categoryParam ? [categoryParam] : []);
   }, [categoryParam]);
+
+  // Drive the search box from the ?search= URL param (header search overlay).
+  useEffect(() => {
+    setSearch(searchParam);
+    setDebouncedSearch(searchParam);
+  }, [searchParam]);
 
   // Debounce the search box so we don't fire a request on every keystroke.
   useEffect(() => {

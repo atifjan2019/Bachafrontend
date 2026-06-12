@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Mail, Phone, MapPin, MessageCircle, Clock, ArrowUpRight, Plus } from "lucide-react";
+import { Mail, Phone, MapPin, MessageCircle, Clock, ArrowUpRight, Navigation } from "lucide-react";
 import { ContactForm } from "./ContactForm";
 import { getSettings, type Settings } from "@/lib/api/settings";
 
@@ -17,7 +16,10 @@ export default async function ContactPage() {
   const email = settings.business_email || "hello@bachastylo.pk";
   const whatsapp = settings.whatsapp_number || "+92 300 1234 567";
   const phone = settings.business_phone || "+92 300 1234 567";
-  const address = settings.business_address || "Gulberg III, Lahore";
+  const address =
+    settings.business_address || "Ouch, Tehsil Adenzai, District Lower Dir, KPK, Pakistan";
+  const mapEmbed = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
+  const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   return (
     <div className="flex flex-col bg-white">
@@ -174,62 +176,90 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      {/* ─── FAQ ──────────────────────────────────────────── */}
-      <section className="relative bg-brand-black text-white overflow-hidden py-20 sm:py-24 lg:py-36">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(232,29,37,0.18)_0%,transparent_55%)]" />
+      {/* ─── STORE LOCATION / MAP ─────────────────────────────── */}
+      <section className="bg-ink-5 py-20 sm:py-24 lg:py-32">
+        <div className="container-shop">
+          <div className="grid items-stretch gap-10 lg:grid-cols-12 lg:gap-12">
+            {/* Info */}
+            <div className="lg:col-span-4">
+              <div className="mb-5 flex items-center gap-3">
+                <span className="h-[2px] w-10 bg-brand-red" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+                  Visit Us
+                </span>
+              </div>
+              <h2 className="font-display text-4xl font-bold tracking-tightest leading-[0.98] text-brand-black sm:text-5xl">
+                Our <span className="italic text-brand-red">store.</span>
+              </h2>
+              <p className="mt-6 max-w-md text-base leading-relaxed text-ink-70 sm:text-lg">
+                Drop by our physical store, or reach out before you visit — we&apos;re always happy
+                to help in person.
+              </p>
 
-        <div className="container-shop relative">
-          <div className="text-center max-w-3xl mx-auto mb-14 sm:mb-20">
-            <div className="flex items-center justify-center gap-3 mb-5">
-              <span className="h-[2px] w-8 bg-brand-red" />
-              <span className="text-[11px] uppercase tracking-[0.28em] text-brand-red font-bold">
-                FAQ
-              </span>
-              <span className="h-[2px] w-8 bg-brand-red" />
+              <div className="mt-8 space-y-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-brand-red text-brand-red">
+                    <MapPin className="h-4 w-4" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.22em] text-brand-red">
+                      Address
+                    </p>
+                    <p className="text-sm text-ink-70">{address}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-brand-red text-brand-red">
+                    <Phone className="h-4 w-4" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.22em] text-brand-red">
+                      Phone
+                    </p>
+                    <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="text-sm text-ink-70 hover:text-brand-black">
+                      {phone}
+                    </a>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-brand-red text-brand-red">
+                    <Clock className="h-4 w-4" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.22em] text-brand-red">
+                      Hours
+                    </p>
+                    <p className="text-sm text-ink-70">Mon–Sat, 10am – 7pm</p>
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href={directionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group mt-9 inline-flex items-center gap-3 bg-brand-black px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-brand-red"
+              >
+                <Navigation className="h-4 w-4" strokeWidth={2.5} />
+                Get Directions
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" strokeWidth={2.5} />
+              </a>
             </div>
-            <h2 className="font-display font-bold tracking-tightest leading-[1.02] text-4xl sm:text-5xl lg:text-6xl text-white">
-              Frequently asked
-              <br />
-              <span className="italic text-brand-red">questions.</span>
-            </h2>
-          </div>
 
-          <div className="max-w-3xl mx-auto divide-y divide-white/10 border-y border-white/10">
-            <Faq
-              q="How long does shipping take?"
-              a="We deliver nationwide in 2–5 working days. Orders placed before 2 pm are dispatched the same day."
-              index={1}
-            />
-            <Faq
-              q="What's your return policy?"
-              a="Unworn, tagged items can be returned within 14 days. We'll arrange a free reverse pickup."
-              index={2}
-            />
-            <Faq
-              q="Do you accept cash on delivery?"
-              a="Yes — COD, JazzCash, Easypaisa, and all major debit and credit cards."
-              index={3}
-            />
-            <Faq
-              q="Can I request a specific size?"
-              a="If a size is out of stock, email us. We restock regularly and can often stitch to order."
-              index={4}
-            />
-            <Faq
-              q="Do you ship internationally?"
-              a="Not yet, but we're working on it. Subscribe to our newsletter for updates when international shipping launches."
-              index={5}
-            />
-          </div>
-
-          <div className="text-center mt-12 sm:mt-16">
-            <Link
-              href="/refund"
-              className="group inline-flex items-center gap-2 text-brand-red font-bold text-[11px] sm:text-[13px] uppercase tracking-[0.22em] hover:gap-3 transition-all"
-            >
-              View full refund policy
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" strokeWidth={2.5} />
-            </Link>
+            {/* Map */}
+            <div className="lg:col-span-8">
+              <div className="relative min-h-[340px] overflow-hidden border border-ink-10 bg-white lg:h-full lg:min-h-0">
+                <iframe
+                  title="Bacha Stylo store location"
+                  src={mapEmbed}
+                  className="absolute inset-0 h-full w-full"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -301,28 +331,5 @@ function ContactCard({
     </a>
   ) : (
     <div className={wrapperClass}>{content}</div>
-  );
-}
-
-function Faq({ q, a, index }: { q: string; a: string; index: number }) {
-  return (
-    <details className="group py-6 sm:py-8">
-      <summary className="flex items-start justify-between gap-6 cursor-pointer list-none">
-        <div className="flex items-start gap-4 sm:gap-6 flex-1 min-w-0">
-          <span className="text-[10px] uppercase tracking-[0.22em] text-brand-red font-bold pt-1 shrink-0">
-            0{index}
-          </span>
-          <h3 className="font-display text-lg sm:text-2xl font-bold text-white group-hover:text-brand-red transition-colors tracking-tight">
-            {q}
-          </h3>
-        </div>
-        <div className="h-8 w-8 shrink-0 border border-white/20 flex items-center justify-center group-hover:border-brand-red group-hover:bg-brand-red transition-colors mt-0.5">
-          <Plus className="h-4 w-4 text-white transition-transform duration-300 group-open:rotate-45" strokeWidth={2.5} />
-        </div>
-      </summary>
-      <div className="mt-4 sm:mt-5 pl-0 sm:pl-12 text-base sm:text-lg text-white/70 leading-relaxed">
-        {a}
-      </div>
-    </details>
   );
 }

@@ -59,8 +59,8 @@ export default function PrivacyPage() {
 
         <h2>7. Children&apos;s Privacy</h2>
         <p>
-          Our products are designed for children, but our website and accounts are intended for use by
-          parents or guardians. We do not knowingly collect information from anyone under 18.
+          Our website and accounts are intended for use by adults. We do not knowingly collect
+          personal information from anyone under the age of 18.
         </p>
 
         <h2>8. Changes to This Policy</h2>

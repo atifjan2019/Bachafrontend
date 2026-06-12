@@ -146,6 +146,18 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" },
         },
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "wa-bob": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.5s ease-out",
@@ -157,6 +169,9 @@ const config: Config = {
         "shimmer": "shimmer 2.5s linear infinite",
         "scale-in": "scale-in 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
         "float": "float 4s ease-in-out infinite",
+        "accordion-down": "accordion-down 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
+        "accordion-up": "accordion-up 0.22s cubic-bezier(0.22, 1, 0.36, 1)",
+        "wa-bob": "wa-bob 6s ease-in-out infinite",
       },
     },
   },

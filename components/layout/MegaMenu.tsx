@@ -21,13 +21,13 @@ export function MegaMenu({
 
   return (
     <div
-      className={`fixed inset-x-0 top-[calc(var(--header-h,5rem)+2px)] z-50 flex justify-center px-4 pt-4 -mt-4 transition-all duration-200 ease-out mega-menu-content ${
+      className={`pointer-events-none fixed inset-x-0 top-[calc(var(--header-h,5rem)+2px)] z-50 flex justify-center px-4 pt-4 -mt-4 transition-all duration-200 ease-out mega-menu-content ${
         isOpen
-          ? "opacity-100 visible translate-y-0 pointer-events-auto"
-          : "opacity-0 invisible translate-y-1 pointer-events-none"
+          ? "opacity-100 visible translate-y-0"
+          : "opacity-0 invisible translate-y-1"
       }`}
     >
-      <div className="w-full max-w-[1120px] overflow-hidden border border-ink-10 bg-white shadow-deep">
+      <div className="pointer-events-auto w-full max-w-[1120px] overflow-hidden border border-ink-10 bg-white shadow-deep">
         {/* Top accent bar */}
         <div className="h-[2px] bg-gradient-to-r from-transparent via-brand-red to-transparent" />
 

@@ -5,7 +5,14 @@ export type BlogPost = {
   slug: string;
   title: string;
   content: string | null;
+  excerpt: string | null;
+  category: string | null;
   image: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  meta_keywords: string | null;
+  og_image: string | null;
+  canonical_url: string | null;
   status: boolean;
   created_at: string;
   updated_at: string;

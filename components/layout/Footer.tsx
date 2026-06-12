@@ -60,6 +60,7 @@ export async function Footer() {
         <FooterColumn
           title="Customer Care"
           links={[
+            { href: "/faq", label: "FAQ" },
             { href: "/contact", label: "Shipping & Delivery" },
             { href: "/refund", label: "Returns & Exchanges" },
             { href: "/contact", label: "Contact Us" },
@@ -74,15 +75,7 @@ export async function Footer() {
         />
       </div>
 
-      {/* Giant brand text */}
-      <div className="relative overflow-hidden border-t border-white/10">
-        <div className="container-shop py-10 lg:py-14">
-          <p className="select-none bg-gradient-to-b from-white/15 to-transparent bg-clip-text text-center font-display text-[clamp(3.5rem,15vw,13rem)] font-black leading-none tracking-tightest text-transparent">
-            BACHA STYLO
-          </p>
-        </div>
-      </div>
-
+      
       {/* Bottom bar */}
       <div className="border-t border-white/10 bg-black">
         <div className="container-shop flex flex-col items-center justify-between gap-3 py-6 text-xs text-white/50 sm:flex-row">

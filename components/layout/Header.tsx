@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { MobileMenu } from "./MobileMenu";
 import { MegaMenu } from "./MegaMenu";
+import { SearchOverlay } from "./SearchOverlay";
 import type { Category } from "@/types";
 
 const NAV = [
@@ -15,6 +16,7 @@ const NAV = [
   { href: "/products", label: "Shop", hasMegaMenu: true },
   { href: "/about", label: "About" },
   { href: "/blogs", label: "Journal" },
+  { href: "/faq", label: "FAQs" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -23,11 +25,13 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
   const itemCount = useCart((s) => s.itemCount());
   const user = useAuth((s) => s.user);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
-  const activeTimer = useRef<NodeJS.Timeout | null>(null);
+  const openTimer = useRef<NodeJS.Timeout | null>(null);
+  const closeTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -52,15 +56,16 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
   }, [shopMenuOpen]);
 
   const handleMouseEnter = () => {
-    if (activeTimer.current) clearTimeout(activeTimer.current);
-    setShopMenuOpen(true);
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (openTimer.current) clearTimeout(openTimer.current);
+    // Hover-intent: only open if the cursor rests on Shop, so a quick
+    // mouse sweep across the header doesn't re-trigger the menu.
+    openTimer.current = setTimeout(() => setShopMenuOpen(true), 140);
   };
 
   const handleMouseLeave = () => {
-    const timer = setTimeout(() => {
-      setShopMenuOpen(false);
-    }, 150);
-    activeTimer.current = timer;
+    if (openTimer.current) clearTimeout(openTimer.current);
+    closeTimer.current = setTimeout(() => setShopMenuOpen(false), 150);
   };
 
   return (
@@ -72,17 +77,17 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
       }`}
     >
     
-      <div className="container-shop flex items-center justify-between gap-4 h-16 lg:h-20 relative">
-        <div className="flex items-center gap-3 flex-1 lg:flex-initial">
+      <div className="container-shop flex items-center justify-between gap-4 h-16 xl:h-20 relative">
+        <div className="flex items-center gap-3 flex-1 xl:flex-initial">
           <button
             aria-label="Open menu"
-            className="lg:hidden text-brand-black p-2 -ml-2 hover:text-brand-red transition"
+            className="xl:hidden text-brand-black p-2 -ml-2 hover:text-brand-red transition"
             onClick={() => setMobileOpen(true)}
           >
             <Menu className="h-5 w-5" strokeWidth={2.5} />
           </button>
 
-          <nav className="hidden lg:flex items-center gap-9 text-[13px] font-semibold uppercase tracking-[0.14em]">
+          <nav className="hidden xl:flex items-center gap-6 text-[13px] font-semibold uppercase tracking-[0.14em]">
             {NAV.map((n) => (
               <div
                 key={n.href}
@@ -124,14 +129,15 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
           <BrandMark size="default" logoUrl={logoUrl} />
         </div>
 
-        <div className="flex items-center gap-1 flex-1 lg:flex-initial justify-end">
-          <Link
-            href="/products"
+        <div className="flex items-center gap-1 flex-1 xl:flex-initial justify-end">
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
             aria-label="Search"
-            className="hidden sm:inline-flex h-10 w-10 items-center justify-center text-brand-black hover:text-brand-red transition-colors"
+            className="inline-flex h-10 w-10 items-center justify-center text-brand-black hover:text-brand-red transition-colors"
           >
             <Search className="h-5 w-5" strokeWidth={2.2} />
-          </Link>
+          </button>
           <Link
             href={mounted && user ? "/account" : "/login"}
             aria-label={mounted && user ? "Account" : "Sign in"}
@@ -155,6 +161,7 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
       </div>
 
       <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} items={NAV} />
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
       <CartDrawer />
     </header>
   );

@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { ToastProvider } from "@/components/ui/toast";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { FloatingWhatsApp } from "@/components/layout/FloatingWhatsApp";
 import { AuthHydrator } from "@/components/layout/AuthHydrator";
 
 const inter = Inter({
@@ -30,10 +31,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings().catch((): Settings => ({} as Settings));
   return {
     title: {
-      default: settings.meta_title || "Bacha Stylo Fashion Home | Modern Kids' Wear in Pakistan",
-      template: `%s | ${settings.business_name || 'Bacha Stylo Fashion Home'}`,
+      default:
+        settings.meta_title ||
+        "Bacha Stylo | Premium Pakistani Fashion & Lifestyle",
+      template: `%s | ${settings.business_name || "Bacha Stylo"}`,
     },
-    description: settings.meta_description || "Modern kids' clothing, thoughtfully designed in Pakistan. Nationwide shipping, Cash on Delivery, JazzCash and Easypaisa supported.",
+    description:
+      settings.meta_description ||
+      "Premium Pakistani fashion and lifestyle — traditional wear, waistcoats, Chitrali pakol caps, shawls, fragrances, footwear, and refined accessories. Nationwide delivery, Cash on Delivery, JazzCash and Easypaisa.",
     metadataBase: new URL(settings.canonical_base_url || "https://bachastylo.pk"),
     icons: {
       icon: settings.favicon_url || "/images/BachaStylo%20favicon.png",
@@ -57,6 +62,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <main className="flex-1">{children}</main>
           <Footer />
           <MobileNav />
+          <FloatingWhatsApp phone={settings?.whatsapp_number} />
         </ToastProvider>
       </body>
     </html>
