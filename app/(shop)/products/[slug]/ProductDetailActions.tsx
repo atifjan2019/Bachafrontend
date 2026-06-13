@@ -19,6 +19,12 @@ export function ProductDetailActions({
 }) {
   const sizes = useMemo(() => uniqueSizes(product.variants), [product]);
   const colors = useMemo(() => uniqueColors(product.variants), [product]);
+  // Only show the colour picker when there's a real colour to choose —
+  // products without colour variants carry a "Default" placeholder.
+  const showColors = useMemo(
+    () => colors.some((c) => c.color.trim().toLowerCase() !== "default"),
+    [colors]
+  );
   const [size, setSize] = useState<string | null>(sizes[0] ?? null);
   const [color, setColor] = useState<string | null>(colors[0]?.color ?? null);
   const [qty, setQty] = useState(1);
@@ -94,12 +100,14 @@ export function ProductDetailActions({
           <SizeSelector sizes={sizes} value={size} onChange={setSize} />
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Colour</span>
+        {showColors && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Colour</span>
+            </div>
+            <ColorSelector colors={colors} value={color} onChange={setColor} />
           </div>
-          <ColorSelector colors={colors} value={color} onChange={setColor} />
-        </div>
+        )}
 
         <div>
           <div className="flex items-center justify-between mb-2">

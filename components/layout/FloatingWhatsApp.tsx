@@ -22,12 +22,12 @@ export function FloatingWhatsApp({ phone }: { phone?: string | null }) {
   )}`;
 
   return (
-    <div className="fixed bottom-20 right-4 z-50 flex flex-col items-end gap-3 lg:bottom-6 lg:right-6">
+    <div className="pointer-events-none fixed bottom-20 right-4 z-50 flex flex-col items-end gap-3 lg:bottom-6 lg:right-6">
       {/* Message bubble */}
       <div
         className={`relative max-w-[250px] rounded-2xl rounded-br-sm border border-ink-10 bg-white px-4 py-3.5 pr-9 shadow-[0_12px_40px_-12px_rgba(20,20,20,0.3)] transition-all duration-300 ${
           open
-            ? "translate-y-0 scale-100 opacity-100"
+            ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none translate-y-2 scale-95 opacity-0"
         }`}
       >
@@ -62,7 +62,7 @@ export function FloatingWhatsApp({ phone }: { phone?: string | null }) {
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"
         onMouseEnter={() => !dismissed && setOpen(true)}
-        className="flex h-14 w-14  items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_30px_-6px_rgba(0,0,0,0.35)] transition-colors duration-300 hover:bg-[#1faa55]"
+        className="pointer-events-auto flex h-14 w-14  items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_30px_-6px_rgba(0,0,0,0.35)] transition-colors duration-300 hover:bg-[#1faa55]"
       >
         <WhatsAppIcon className="h-7 w-7" />
       </a>

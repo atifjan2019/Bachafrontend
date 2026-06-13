@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/common/BrandMark";
-import { Facebook, Instagram, ArrowUpRight } from "lucide-react";
+import { Facebook, Instagram, ArrowUpRight, Heart } from "lucide-react";
 import { getSettings, type Settings } from "@/lib/api/settings";
 
 const FOOTER_ABOUT =
@@ -78,10 +78,21 @@ export async function Footer() {
       
       {/* Bottom bar */}
       <div className="border-t border-white/10 bg-black">
-        <div className="container-shop flex flex-col items-center justify-between gap-3 py-6 text-xs text-white/50 sm:flex-row">
+        {/* Right padding keeps content clear of the fixed WhatsApp button (bottom-right). */}
+        <div className="container-shop flex flex-col items-center justify-between gap-3 py-6 pr-16 text-xs text-white/50 sm:flex-row sm:pr-20 lg:pr-24">
           <p>&copy; {new Date().getFullYear()} Bacha Stylo. All rights reserved.</p>
-          <p className="uppercase tracking-[0.18em] text-white/40">
-            Cash on Delivery · Nationwide Shipping
+          <p className="flex items-center gap-1.5 text-white/40">
+            Made with
+            <Heart className="h-3.5 w-3.5 fill-brand-red text-brand-red" aria-hidden="true" />
+            by
+            <a
+              href="https://www.webspires.com.pk?utm_source=bachastylo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-white/70 transition-colors hover:text-brand-red"
+            >
+              Webspires
+            </a>
           </p>
         </div>
       </div>
