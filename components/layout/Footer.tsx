@@ -24,7 +24,10 @@ export async function Footer() {
       <div className="container-shop relative grid grid-cols-2 gap-8 py-14 sm:gap-10 lg:grid-cols-5 lg:gap-12 lg:py-20">
         <div className="col-span-2 lg:col-span-2">
           <div className="mb-6 inline-block bg-white p-3">
-            <BrandMark size="lg" logoUrl={settings?.logo_url as string | undefined} />
+            <BrandMark
+              size="lg"
+              logoUrl={(settings?.footer_logo_url || settings?.logo_url) as string | undefined}
+            />
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-white/60">
             {settings?.footer_about || FOOTER_ABOUT}

@@ -6,6 +6,7 @@ export interface Settings {
   business_phone?: string;
   business_address?: string;
   logo_url?: string;
+  footer_logo_url?: string;
   favicon_url?: string;
   facebook_url?: string;
   instagram_url?: string;
