@@ -5,9 +5,10 @@ interface BrandMarkProps {
   variant?: "light" | "dark";
   size?: "default" | "lg" | "xl";
   logoUrl?: string;
+  className?: string;
 }
 
-export function BrandMark({ variant = "light", size = "default", logoUrl }: BrandMarkProps) {
+export function BrandMark({ variant = "light", size = "default", logoUrl , className}: BrandMarkProps) {
   const src =
     logoUrl ||
     (variant === "dark"
@@ -28,7 +29,7 @@ export function BrandMark({ variant = "light", size = "default", logoUrl }: Bran
         width={0}
         height={0}
         sizes="100vw"
-        className={`w-auto h-auto ${maxH} object-contain`}
+        className={`w-auto h-auto ${maxH} object-contain ${className || ""}`}
         priority
         referrerPolicy="no-referrer"
       />
