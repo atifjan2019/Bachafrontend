@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/common/BrandMark";
-import { Facebook, Instagram, ArrowUpRight, Heart } from "lucide-react";
+import { SocialLinks } from "@/components/common/SocialLinks";
+import { ArrowUpRight, Heart, Mail, Phone } from "lucide-react";
 import { getSettings, type Settings } from "@/lib/api/settings";
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
+import { resolveWhatsApp } from "@/lib/constants/social";
 
 const FOOTER_ABOUT =
   "Bacha Stylo is a premium Pakistani fashion and lifestyle brand offering traditional wear, fragrances, footwear, accessories, and everyday essentials designed with elegance, simplicity, and authenticity.";
@@ -33,22 +36,45 @@ export async function Footer() {
           <p className="max-w-sm text-sm leading-relaxed text-white/60">
             {settings?.footer_about || FOOTER_ABOUT}
           </p>
-          <div className="mt-7 flex items-center gap-3">
-            {settings?.instagram_url && (
-              <SocialIcon label="Instagram" href={settings.instagram_url}>
-                <Instagram className="h-4 w-4" strokeWidth={2} />
-              </SocialIcon>
-            )}
-            {settings?.facebook_url && (
-              <SocialIcon label="Facebook" href={settings.facebook_url}>
-                <Facebook className="h-4 w-4" strokeWidth={2} />
-              </SocialIcon>
-            )}
-            {settings?.tiktok_url && (
-              <SocialIcon label="TikTok" href={settings.tiktok_url}>
-                <TikTokIcon className="h-4 w-4" />
-              </SocialIcon>
-            )}
+          <div className="mt-7">
+            <SocialLinks
+              tone="onDark"
+              size="md"
+              overrides={{
+                facebook: settings?.facebook_url,
+                instagram: settings?.instagram_url,
+                tiktok: settings?.tiktok_url,
+                whatsapp: settings?.whatsapp_number
+                  ? `https://wa.me/${settings.whatsapp_number.replace(/[^0-9]/g, "")}`
+                  : undefined,
+              }}
+            />
+          </div>
+
+          {/* Contact */}
+          <div className="mt-8">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+              Get in touch
+            </p>
+            <div className="space-y-2.5 text-sm">
+              <a
+                href={`mailto:${SUPPORT_EMAIL}`}
+                className="group flex items-center gap-3 text-white/70 transition-colors hover:text-brand-red"
+              >
+                <Mail className="h-4 w-4 shrink-0 text-brand-red" strokeWidth={2} />
+                {SUPPORT_EMAIL}
+              </a>
+              <a
+                href={resolveWhatsApp(SUPPORT_PHONE).href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 text-white/70 transition-colors hover:text-brand-red"
+              >
+                <Phone className="h-4 w-4 shrink-0 text-brand-red" strokeWidth={2} />
+                {SUPPORT_PHONE}
+                <span className="text-white/40">· Call &amp; WhatsApp</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -101,37 +127,6 @@ export async function Footer() {
         </div>
       </div>
     </footer>
-  );
-}
-
-function SocialIcon({
-  label,
-  href,
-  children,
-}: {
-  label: string;
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <a
-      aria-label={label}
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex h-10 w-10 items-center justify-center border border-white/20 text-white/70 transition-all hover:border-brand-red hover:bg-brand-red hover:text-white"
-    >
-      {children}
-    </a>
-  );
-}
-
-/** TikTok glyph — lucide has no TikTok icon, so use a minimal inline SVG. */
-function TikTokIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-      <path d="M16.6 5.82A4.28 4.28 0 0 1 15.5 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12V9.81a5.79 5.79 0 0 0-.78-.06 5.8 5.8 0 1 0 5.8 5.8V9.01a7.3 7.3 0 0 0 4.29 1.38V7.3a4.28 4.28 0 0 1-3.31-1.48z" />
-    </svg>
   );
 }
 

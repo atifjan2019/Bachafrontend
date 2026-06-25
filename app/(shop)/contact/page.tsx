@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Mail, Phone, MapPin, MessageCircle, Clock, ArrowUpRight, Navigation } from "lucide-react";
 import { ContactForm } from "./ContactForm";
+import { SocialLinks } from "@/components/common/SocialLinks";
 import { getSettings, type Settings } from "@/lib/api/settings";
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
 
 export const revalidate = 0;
 
@@ -13,9 +15,11 @@ export const metadata: Metadata = {
 export default async function ContactPage() {
   const settings = await getSettings().catch((): Settings => ({} as Settings));
 
-  const email = settings.business_email || "hello@bachastylo.pk";
-  const whatsapp = settings.whatsapp_number || "+92 300 1234 567";
-  const phone = settings.business_phone || "+92 300 1234 567";
+  const email = settings.business_email || SUPPORT_EMAIL;
+  // Pin phone + WhatsApp to the canonical support line for consistency
+  // across the site, regardless of any stale admin Settings value.
+  const whatsapp = SUPPORT_PHONE;
+  const phone = SUPPORT_PHONE;
   const address =
     settings.business_address || "Ouch, Tehsil Adenzai, District Lower Dir, KPK, Pakistan";
   const mapEmbed = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
@@ -138,6 +142,14 @@ export default async function ContactPage() {
                   <p className="text-sm text-ink-70">Usually within minutes</p>
                 </div>
               </div>
+            </div>
+
+            {/* Follow us */}
+            <div className="mt-10">
+              <p className="mb-3 text-[10px] uppercase tracking-[0.22em] text-brand-red font-bold">
+                Follow us
+              </p>
+              <SocialLinks tone="onLight" size="md" />
             </div>
 
             {/* Dark framed image accent */}

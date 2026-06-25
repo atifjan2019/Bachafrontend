@@ -9,6 +9,7 @@ const eid = { id: 1, slug: "eid-collection", name: "Eid Collection" };
 const shaadi = { id: 2, slug: "shaadi-wear", name: "Shaadi Wear" };
 const mehndi = { id: 3, slug: "mehndi-nights", name: "Mehndi Nights" };
 const everyday = { id: 4, slug: "everyday-kurtas", name: "Everyday Kurtas" };
+const waistcoat = { id: 6, slug: "waistcoat", name: "Waistcoat" };
 
 function variants(start: number, colors: { c: string; hex: string }[], stocks: number[] = [8, 5, 3, 2, 0]): Variant[] {
   const out: Variant[] = [];
@@ -21,6 +22,28 @@ function variants(start: number, colors: { c: string; hex: string }[], stocks: n
         color: color.c,
         color_hex: color.hex,
         stock: stocks[i % stocks.length],
+        sku: `BSF-${start}-${color.c.slice(0, 3).toUpperCase()}-${size}`,
+      });
+    });
+  }
+  return out;
+}
+
+/**
+ * Build variants for figure-size clothing (e.g. waistcoats). `sizes` are the
+ * numeric figure sizes (14–50); the storefront groups them into fit bands.
+ */
+function figureVariants(start: number, sizes: number[], colors: { c: string; hex: string }[]): Variant[] {
+  const out: Variant[] = [];
+  let id = start;
+  for (const color of colors) {
+    sizes.forEach((size) => {
+      out.push({
+        id: id++,
+        size: String(size),
+        color: color.c,
+        color_hex: color.hex,
+        stock: 8,
         sku: `BSF-${start}-${color.c.slice(0, 3).toUpperCase()}-${size}`,
       });
     });
@@ -344,5 +367,77 @@ export const mockProducts: Product[] = [
     in_stock: true,
     low_stock_threshold: 3,
     created_at: "2026-03-20",
+  },
+  {
+    id: 201,
+    slug: "classic-black-waistcoat",
+    name: "Classic Black Waistcoat",
+    description:
+      "A timeless black waistcoat tailored in structured wool-blend with a five-button front and an adjustable back strap. Available in the full figure-size range, from kids to plus.",
+    price: 4490,
+    sale_price: 3790,
+    category: waistcoat,
+    images: [
+      { id: 1, url: img("photo-1593032465175-481ac7f401a0"), alt: "Classic black waistcoat" },
+      { id: 2, url: img("photo-1507679799987-c73779587ccf"), alt: "Black waistcoat detail" },
+    ],
+    // Spans every fit band (14–50) to showcase the two-step fit → size flow.
+    variants: figureVariants(
+      3001,
+      [14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50],
+      [
+        { c: "Black", hex: "#141414" },
+        { c: "Charcoal", hex: "#3A3A3A" },
+      ]
+    ),
+    in_stock: true,
+    low_stock_threshold: 3,
+    created_at: "2026-04-10",
+    is_new: true,
+    is_featured: true,
+  },
+  {
+    id: 202,
+    slug: "navy-tweed-waistcoat",
+    name: "Navy Tweed Waistcoat",
+    description:
+      "A refined navy tweed waistcoat with a subtle herringbone weave and welt pockets. Cut for teens and adults across Gen Z and plus figure sizes.",
+    price: 5290,
+    sale_price: null,
+    category: waistcoat,
+    images: [{ id: 1, url: img("photo-1521577352947-9bb58764b69a"), alt: "Navy tweed waistcoat" }],
+    // Gen Z + Plus (34–50).
+    variants: figureVariants(
+      3101,
+      [34, 36, 38, 40, 42, 44, 46, 48, 50],
+      [{ c: "Navy", hex: "#1F2A44" }]
+    ),
+    in_stock: true,
+    low_stock_threshold: 3,
+    created_at: "2026-04-12",
+    is_best_seller: true,
+  },
+  {
+    id: 203,
+    slug: "maroon-kids-waistcoat",
+    name: "Maroon Festive Waistcoat",
+    description:
+      "A festive maroon waistcoat with a soft inner lining and self-tone buttons — made for the youngest members of the family. Kids and teen figure sizes.",
+    price: 3290,
+    sale_price: 2790,
+    category: waistcoat,
+    images: [{ id: 1, url: img("photo-1490114538077-0a7f8cb49891"), alt: "Maroon kids waistcoat" }],
+    // Kids + Teens (14–32).
+    variants: figureVariants(
+      3201,
+      [14, 16, 18, 20, 22, 24, 26, 28, 30, 32],
+      [
+        { c: "Maroon", hex: "#7B2230" },
+        { c: "Bottle Green", hex: "#0B3D2E" },
+      ]
+    ),
+    in_stock: true,
+    low_stock_threshold: 3,
+    created_at: "2026-04-14",
   },
 ];

@@ -18,6 +18,30 @@ export async function register(name: string, email: string, password: string) {
   return { user, token };
 }
 
+/**
+ * Request a password reset link. The backend always responds success (it
+ * never reveals whether an email is registered), so the UI shows the same
+ * "check your email" message regardless.
+ */
+export async function requestPasswordReset(email: string): Promise<void> {
+  await apiClient.post("/auth/forgot-password", { email });
+}
+
+/** Complete a password reset using the token + email from the email link. */
+export async function resetPassword(
+  email: string,
+  token: string,
+  password: string,
+  passwordConfirmation: string
+): Promise<void> {
+  await apiClient.post("/auth/reset-password", {
+    email,
+    token,
+    password,
+    password_confirmation: passwordConfirmation,
+  });
+}
+
 export function logout() {
   Cookies.remove("bsf_token");
   if (typeof window !== "undefined") {

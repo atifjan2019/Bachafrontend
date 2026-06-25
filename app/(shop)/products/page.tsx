@@ -7,6 +7,7 @@ import { getCategories } from "@/lib/api/categories";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { CategoryFilter } from "@/components/filters/CategoryFilter";
 import { PriceRangeSlider } from "@/components/filters/PriceRangeSlider";
+import { SizeFilter } from "@/components/filters/SizeFilter";
 import { SortDropdown } from "@/components/filters/SortDropdown";
 import { MobileFilterSheet } from "@/components/filters/MobileFilterSheet";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ function ProductsPageContent() {
   const [debouncedSearch, setDebouncedSearch] = useState(searchParam);
   const [collection, setCollection] = useState<Collection>("all");
   const [price, setPrice] = useState<[number, number]>([0, 15000]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [sort, setSort] = useState<"newest" | "price_asc" | "price_desc">("newest");
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -72,7 +74,7 @@ function ProductsPageContent() {
   // a page number that no longer exists in the filtered result set.
   useEffect(() => {
     setPage(1);
-  }, [selectedCats, price, sort, debouncedSearch, collection]);
+  }, [selectedCats, price, sort, debouncedSearch, collection, selectedSizes]);
 
   useEffect(() => {
     let mounted = true;
@@ -129,16 +131,32 @@ function ProductsPageContent() {
           <CategoryFilter categories={categories} value={selectedCats} onChange={setSelectedCats} />
         </div>
         <div>
+          <h4 className="font-display text-base mb-3">Size</h4>
+          <SizeFilter value={selectedSizes} onChange={setSelectedSizes} />
+        </div>
+        <div>
           <h4 className="font-display text-base mb-3">Price Range</h4>
           <PriceRangeSlider value={price} onChange={setPrice} />
         </div>
       </div>
     ),
-    [categories, selectedCats, price]
+    [categories, selectedCats, selectedSizes, price]
+  );
+
+  // Size is filtered client-side (the backend doesn't support it), refining the
+  // loaded result set the same way the price filter does.
+  const visibleProducts = useMemo(
+    () =>
+      selectedSizes.length === 0
+        ? products
+        : products.filter((p) => p.variants.some((v) => selectedSizes.includes(v.size))),
+    [products, selectedSizes]
   );
 
   const activeFilterCount =
-    selectedCats.length + (price[0] > 0 || price[1] < 15000 ? 1 : 0);
+    selectedCats.length +
+    selectedSizes.length +
+    (price[0] > 0 || price[1] < 15000 ? 1 : 0);
 
   return (
     <div className="flex flex-col">
@@ -215,6 +233,16 @@ function ProductsPageContent() {
                   </button>
                 );
               })}
+              {selectedSizes.map((sz) => (
+                <button
+                  key={sz}
+                  onClick={() => setSelectedSizes((v) => v.filter((s) => s !== sz))}
+                  className="inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition"
+                >
+                  Size {sz}
+                  <X className="h-3 w-3" />
+                </button>
+              ))}
               {(price[0] > 0 || price[1] < 15000) && (
                 <button
                   onClick={() => setPrice([0, 15000])}
@@ -228,6 +256,7 @@ function ProductsPageContent() {
                 <button
                   onClick={() => {
                     setSelectedCats([]);
+                    setSelectedSizes([]);
                     setPrice([0, 15000]);
                   }}
                   className="text-xs text-ink-50 hover:text-brand-black underline transition"
@@ -250,6 +279,10 @@ function ProductsPageContent() {
                 <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Category</h4>
                 <CategoryFilter categories={categories} value={selectedCats} onChange={setSelectedCats} />
               </div>
+              <div className="border-b border-ink-10 pb-6 mb-6">
+                <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Size</h4>
+                <SizeFilter value={selectedSizes} onChange={setSelectedSizes} />
+              </div>
               <div>
                 <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Price range</h4>
                 <PriceRangeSlider value={price} onChange={setPrice} />
@@ -265,7 +298,7 @@ function ProductsPageContent() {
                   <ProductCardSkeleton key={i} />
                 ))}
               </div>
-            ) : products.length === 0 ? (
+            ) : visibleProducts.length === 0 ? (
               <EmptyState
                 title="Nothing matches yet"
                 description="Try clearing a filter or two. New pieces are added regularly."
@@ -274,7 +307,7 @@ function ProductsPageContent() {
               />
             ) : (
               <>
-                <ProductGrid products={products} />
+                <ProductGrid products={visibleProducts} />
                 {lastPage > 1 && (
                   <div className="mt-12 flex items-center justify-center gap-3">
                     <button
@@ -307,6 +340,7 @@ function ProductsPageContent() {
         onClose={() => setMobileOpen(false)}
         onClear={() => {
           setSelectedCats([]);
+          setSelectedSizes([]);
           setPrice([0, 15000]);
         }}
       >

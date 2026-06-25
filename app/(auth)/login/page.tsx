@@ -51,7 +51,12 @@ export default function LoginPage() {
             <FieldError>{form.formState.errors.email?.message}</FieldError>
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link href="/forgot-password" className="text-xs text-brand-red hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <Input id="password" type="password" {...form.register("password")} className="mt-1.5" placeholder="At least 6 characters" />
             <FieldError>{form.formState.errors.password?.message}</FieldError>
           </div>

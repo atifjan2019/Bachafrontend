@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPost } from "@/lib/api/blogs";
+import { SocialLinks } from "@/components/common/SocialLinks";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -109,6 +110,14 @@ export default async function BlogPostPage({
           ) : (
             <p>Content is still being written for this story. Check back soon.</p>
           )}
+        </div>
+
+        {/* Share / follow */}
+        <div className="mx-auto mt-14 flex max-w-3xl flex-col items-center gap-4 border-t border-ink-10 pt-10 sm:flex-row sm:justify-between">
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-brand-red">
+            Enjoyed this? Follow us
+          </p>
+          <SocialLinks tone="onLight" size="md" />
         </div>
       </div>
     </article>

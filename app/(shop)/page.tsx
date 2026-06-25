@@ -9,6 +9,13 @@ import { getSettings, type Settings } from "@/lib/api/settings";
 import { formatPKR } from "@/lib/utils/format";
 import { NewsletterForm } from "@/components/home/NewsletterForm";
 import {
+  FacebookIcon,
+  InstagramIcon,
+  TikTokIcon,
+  WhatsAppIcon,
+} from "@/components/common/SocialIcons";
+import { SOCIAL_ACCOUNTS, resolveWhatsApp } from "@/lib/constants/social";
+import {
   Truck,
   Banknote,
   MessageCircle,
@@ -19,8 +26,6 @@ import {
   Gem,
   Scissors,
   Feather,
-  Instagram,
-  Facebook,
 } from "lucide-react";
 
 export const revalidate = 0;
@@ -70,11 +75,32 @@ export default async function HomePage() {
   const heritageCategory =
     categories.find((c) => /tradition|heritage|waistcoat|shawl/i.test(c.slug)) ?? categories[0];
 
-  // Social links are managed by the admin in Settings.
+  // Canonical brand accounts, with admin Settings overriding the URL when set.
   const socials = [
-    { name: "Instagram", handle: "@bachastylo", href: settings.instagram_url, icon: Instagram },
-    { name: "Facebook", handle: "/bachastylo", href: settings.facebook_url, icon: Facebook },
-    { name: "TikTok", handle: "@bachastylo", href: settings.tiktok_url, icon: TikTokIcon },
+    {
+      name: "Instagram",
+      handle: SOCIAL_ACCOUNTS.instagram.handle,
+      href: settings.instagram_url || SOCIAL_ACCOUNTS.instagram.href,
+      icon: InstagramIcon,
+    },
+    {
+      name: "Facebook",
+      handle: SOCIAL_ACCOUNTS.facebook.handle,
+      href: settings.facebook_url || SOCIAL_ACCOUNTS.facebook.href,
+      icon: FacebookIcon,
+    },
+    {
+      name: "TikTok",
+      handle: SOCIAL_ACCOUNTS.tiktok.handle,
+      href: settings.tiktok_url || SOCIAL_ACCOUNTS.tiktok.href,
+      icon: TikTokIcon,
+    },
+    {
+      name: "WhatsApp",
+      handle: SOCIAL_ACCOUNTS.whatsapp.handle,
+      href: resolveWhatsApp(settings.whatsapp_number).href,
+      icon: WhatsAppIcon,
+    },
   ];
 
   // Featured Collection spotlights: prefer admin-curated featured products
@@ -477,7 +503,7 @@ export default async function HomePage() {
             subtitle="Follow us for new arrivals, customer reviews, styling inspiration, behind-the-scenes moments, and exclusive product highlights."
             align="center"
           />
-          <div className="mt-12 grid gap-4 sm:mt-14 sm:grid-cols-3 sm:gap-5">
+          <div className="mt-12 grid grid-cols-2 gap-4 sm:mt-14 sm:gap-5 lg:grid-cols-4">
             {socials.map((s) => (
               <SocialCard key={s.name} {...s} />
             ))}
@@ -546,15 +572,6 @@ function CollectionImage({
   );
 }
 
-/** TikTok glyph — lucide has no TikTok icon, so use a minimal inline SVG. */
-function TikTokIcon({ className }: { className?: string; strokeWidth?: number }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-      <path d="M16.6 5.82A4.28 4.28 0 0 1 15.5 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12V9.81a5.79 5.79 0 0 0-.78-.06 5.8 5.8 0 1 0 5.8 5.8V9.01a7.3 7.3 0 0 0 4.29 1.38V7.3a4.28 4.28 0 0 1-3.31-1.48z" />
-    </svg>
-  );
-}
-
 function SocialCard({
   name,
   handle,
@@ -564,17 +581,17 @@ function SocialCard({
   name: string;
   handle: string;
   href?: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: React.ComponentType<{ className?: string }>;
 }) {
   const inner = (
     <div className="group relative flex aspect-[4/3] flex-col items-center justify-center gap-4 overflow-hidden bg-gradient-to-br from-brand-black via-brand-black-soft to-[#241015] p-8 text-center text-white transition-transform duration-500 hover:-translate-y-1">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,29,37,0.18)_0%,transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 text-brand-red transition-colors duration-500 group-hover:bg-brand-red group-hover:text-white">
-        <Icon className="h-7 w-7" strokeWidth={1.5} />
+        <Icon className="h-7 w-7" />
       </div>
       <div className="relative">
         <h3 className="font-display text-xl font-bold">{name}</h3>
-        <p className="mt-1 text-xs text-white/60">{handle}</p>
+        {/* <p className="mt-1 text-xs text-white/60">{handle}</p> */}
       </div>
       <span className="relative mt-1 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/80 transition-colors group-hover:text-brand-red">
         Follow

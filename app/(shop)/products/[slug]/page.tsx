@@ -2,10 +2,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProduct, getRelated } from "@/lib/api/products";
 import { getSettings } from "@/lib/api/settings";
+import { resolveWhatsApp } from "@/lib/constants/social";
 import { getReviews } from "@/lib/api/reviews";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { ProductReviews } from "@/components/product/ProductReviews";
+import { SizeGuide } from "@/components/product/SizeGuide";
 import { GoldDivider } from "@/components/common/GoldDivider";
 import { ProductDetailActions } from "./ProductDetailActions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -35,7 +37,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
         <ProductGallery images={product.images} name={product.name} />
         <div>
-          <ProductDetailActions product={product} whatsappNumber={settings?.whatsapp_number} />
+          <ProductDetailActions
+            product={product}
+            whatsappNumber={resolveWhatsApp(settings?.whatsapp_number).number}
+          />
 
           <div className="mt-8">
             <Accordion type="single" collapsible defaultValue="desc">
@@ -46,25 +51,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <AccordionItem value="size">
                 <AccordionTrigger>Size Guide</AccordionTrigger>
                 <AccordionContent>
-                  <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-                    <table className="w-full text-left text-xs min-w-[340px]">
-                      <thead className="text-brand-black">
-                        <tr>
-                          <th className="py-2 pr-3">Size</th>
-                          <th className="py-2 pr-3">Chest (in)</th>
-                          <th className="py-2 pr-3">Waist (in)</th>
-                          <th className="py-2">Length (in)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-muted">
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">S</td><td className="pr-3">36–38</td><td className="pr-3">30–32</td><td>27</td></tr>
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">M</td><td className="pr-3">38–40</td><td className="pr-3">32–34</td><td>28</td></tr>
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">L</td><td className="pr-3">40–42</td><td className="pr-3">34–36</td><td>29</td></tr>
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">XL</td><td className="pr-3">42–44</td><td className="pr-3">36–38</td><td>30</td></tr>
-                        <tr className="border-t border-border"><td className="py-1.5 pr-3">XXL</td><td className="pr-3">44–46</td><td className="pr-3">38–40</td><td>31</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
+                  <SizeGuide sizes={Array.from(new Set(product.variants.map((v) => v.size)))} />
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="care">

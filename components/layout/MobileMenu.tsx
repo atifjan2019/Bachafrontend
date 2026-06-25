@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { BrandMark } from "@/components/common/BrandMark";
+import { SocialLinks } from "@/components/common/SocialLinks";
 import { useAuth } from "@/lib/store/auth";
 import { ArrowUpRight } from "lucide-react";
 
@@ -74,6 +75,12 @@ export function MobileMenu({
                 </Link>
               </>
             )}
+            <div className="mt-4 border-t border-ink-10 pt-5">
+              <p className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.22em] text-brand-red">
+                Follow us
+              </p>
+              <SocialLinks tone="onLight" size="md" className="justify-center" />
+            </div>
             <p className="text-[10px] uppercase tracking-[0.22em] text-ink-30 mt-3 text-center">
               &copy; {new Date().getFullYear()} · Bacha Stylo
             </p>

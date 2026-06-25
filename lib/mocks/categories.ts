@@ -33,4 +33,21 @@ export const mockCategories: Category[] = [
       "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=1200&auto=format&fit=crop&q=70",
     product_count: 3,
   },
+  {
+    id: 5,
+    slug: "clothes",
+    name: "Clothes",
+    image:
+      "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=1200&auto=format&fit=crop&q=70",
+    product_count: 3,
+    children: [
+      {
+        id: 6,
+        slug: "waistcoat",
+        name: "Waistcoat",
+        image: "",
+        product_count: 3,
+      },
+    ],
+  },
 ];

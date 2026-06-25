@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/common/PageHero";
+import { SocialLinks } from "@/components/common/SocialLinks";
 import { ArrowUpRight } from "lucide-react";
 import { getBlogPosts, type BlogPost as ApiBlogPost } from "@/lib/api/blogs";
 
@@ -143,6 +144,23 @@ export default async function JournalPage() {
           )}
         </>
       )}
+
+      {/* Follow the journey */}
+      <section className="border-t border-ink-10 bg-white py-14 sm:py-16">
+        <div className="container-shop flex flex-col items-center text-center">
+          <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+            Follow the journey
+          </span>
+          <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-brand-black sm:text-3xl">
+            Get the latest from Bacha Stylo
+          </h2>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-50">
+            New stories, styling inspiration, and behind-the-scenes moments — straight from our
+            socials.
+          </p>
+          <SocialLinks tone="onLight" size="lg" className="mt-7 justify-center" />
+        </div>
+      </section>
     </div>
   );
 }

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
 };
 
 import { PageHero } from "@/components/common/PageHero";
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
 
 export default function TermsPage() {
   return (
@@ -15,7 +16,7 @@ export default function TermsPage() {
       <section className="container-shop py-16 lg:py-20 max-w-3xl prose-policy">
         <h2>1. General</h2>
         <p>
-          These terms govern your use of bachastylo.pk and any purchase you make through the site. By
+          These terms govern your use of Bachastylo.com and any purchase you make through the site. By
           placing an order you agree to these terms in full. Bacha Stylo reserves the right to update
           them at any time; the latest version will always be available on this page.
         </p>
@@ -80,8 +81,8 @@ export default function TermsPage() {
 
         <h2>9. Contact</h2>
         <p>
-          For questions about these terms, email <strong>hello@bachastylo.pk</strong> or
-          call <strong>+92 300 1234 567</strong>.
+          For questions about these terms, email <strong>{SUPPORT_EMAIL}</strong> or
+          call <strong>{SUPPORT_PHONE}</strong>.
         </p>
       </section>
     </div>

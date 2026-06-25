@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { GoldDivider } from "@/components/common/GoldDivider";
 import { PaymentMethodRadio } from "@/components/checkout/PaymentMethodRadio";
 import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
+import { SocialLinks } from "@/components/common/SocialLinks";
 import { useCart } from "@/lib/store/cart";
 import { useAuth } from "@/lib/store/auth";
 import { placeOrder } from "@/lib/api/orders";
@@ -190,6 +191,12 @@ export default function CheckoutPage() {
           <p className="text-[10px] text-center text-ink-50 px-4">
             By placing your order, you agree to our Terms of Service and Privacy Policy.
           </p>
+          <div className="flex flex-col items-center gap-2.5 border-t border-ink-10 pt-4">
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-50">
+              Need help? Reach us on
+            </span>
+            <SocialLinks tone="onLight" size="sm" className="justify-center" />
+          </div>
         </div>
       </form>
     </div>

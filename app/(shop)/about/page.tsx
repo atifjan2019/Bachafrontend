@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getSettings } from "@/lib/api/settings";
+import { resolveWhatsApp } from "@/lib/constants/social";
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
 import {
   ArrowUpRight,
   Crown,
@@ -50,8 +52,7 @@ const VALUES = [
 
 export default async function AboutPage() {
   const settings = await getSettings().catch(() => null);
-  const waNumber = settings?.whatsapp_number?.replace(/[^0-9]/g, "");
-  const waHref = waNumber ? `https://wa.me/${waNumber}` : "/contact";
+  const waHref = resolveWhatsApp(settings?.whatsapp_number).href;
 
   return (
     <div className="flex flex-col bg-white">
@@ -336,13 +337,30 @@ export default async function AboutPage() {
             </Link>
             <a
               href={waHref}
-              {...(waNumber ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex w-full items-center justify-center gap-3 border-2 border-white/40 px-8 py-5 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:border-brand-red hover:text-brand-red sm:w-auto"
             >
               <WhatsAppIcon className="h-5 w-5" />
               Contact on WhatsApp
             </a>
           </div>
+          <p className="mt-7 text-sm text-white/60">
+            Or reach us at{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-white transition-colors hover:text-brand-red">
+              {SUPPORT_EMAIL}
+            </a>{" "}
+            ·{" "}
+            <a
+              href={resolveWhatsApp(SUPPORT_PHONE).href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white transition-colors hover:text-brand-red"
+            >
+              {SUPPORT_PHONE}
+            </a>{" "}
+            (Call &amp; WhatsApp)
+          </p>
         </div>
       </section>
     </div>

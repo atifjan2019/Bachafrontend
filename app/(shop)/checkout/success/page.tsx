@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { getOrder } from "@/lib/api/orders";
 import { GoldDivider } from "@/components/common/GoldDivider";
+import { SocialLinks } from "@/components/common/SocialLinks";
 import { Button } from "@/components/ui/button";
 import { formatPKR } from "@/lib/utils/format";
 import { CheckCircle2 } from "lucide-react";
@@ -156,6 +157,13 @@ function SuccessInner() {
           <Button asChild variant="outline">
             <Link href="/">Back to Home</Link>
           </Button>
+        </div>
+
+        <div className="mt-12 border-t border-ink-10 pt-8">
+          <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-brand-red">
+            Stay connected
+          </p>
+          <SocialLinks tone="onLight" size="md" className="justify-center" />
         </div>
       </div>
     </div>

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/common/PageHero";
+import { SocialLinks } from "@/components/common/SocialLinks";
 import { getSettings } from "@/lib/api/settings";
+import { resolveWhatsApp } from "@/lib/constants/social";
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
 import {
   Accordion,
   AccordionContent,
@@ -122,7 +125,7 @@ const FAQ_CATEGORIES = [
     items: [
       {
         q: "How can I contact you?",
-        a: "You can contact us via WhatsApp, social media pages, or our website support section.",
+        a: `You can reach our support team on WhatsApp or by phone at ${SUPPORT_PHONE}, email us at ${SUPPORT_EMAIL}, or message us on our social media pages.`,
       },
       {
         q: "Do you respond quickly to queries?",
@@ -134,8 +137,7 @@ const FAQ_CATEGORIES = [
 
 export default async function FaqPage() {
   const settings = await getSettings().catch(() => null);
-  const waNumber = settings?.whatsapp_number?.replace(/[^0-9]/g, "");
-  const waHref = waNumber ? `https://wa.me/${waNumber}` : "/contact";
+  const waHref = resolveWhatsApp(settings?.whatsapp_number).href;
 
   return (
     <div className="flex flex-col bg-white">
@@ -227,7 +229,8 @@ export default async function FaqPage() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <a
               href={waHref}
-              {...(waNumber ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex w-full items-center justify-center gap-2 bg-[#25D366] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-90 sm:w-auto"
             >
               <WhatsAppIcon className="h-5 w-5" />
@@ -239,6 +242,28 @@ export default async function FaqPage() {
             >
               Contact Us
             </Link>
+          </div>
+
+          <p className="mt-6 text-sm text-white/60">
+            <a
+              href={resolveWhatsApp(SUPPORT_PHONE).href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white transition-colors hover:text-brand-red"
+            >
+              {SUPPORT_PHONE}
+            </a>{" "}
+            (Call &amp; WhatsApp) ·{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-white transition-colors hover:text-brand-red">
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
+
+          <div className="mt-10">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
+              Connect with us
+            </p>
+            <SocialLinks tone="onDark" size="md" className="justify-center" />
           </div>
         </div>
       </section>

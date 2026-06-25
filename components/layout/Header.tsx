@@ -9,6 +9,7 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { MobileMenu } from "./MobileMenu";
 import { MegaMenu } from "./MegaMenu";
 import { SearchOverlay } from "./SearchOverlay";
+import { SocialLinks } from "@/components/common/SocialLinks";
 import type { Category } from "@/types";
 
 const NAV = [
@@ -130,6 +131,9 @@ export function Header({ logoUrl, categories = [] }: { logoUrl?: string; categor
         </div>
 
         <div className="flex items-center gap-1 flex-1 xl:flex-initial justify-end">
+          <div className="hidden lg:flex items-center mr-1.5 border-r border-ink-10 pr-2.5">
+            <SocialLinks tone="onLight" bordered={false} size="sm" />
+          </div>
           <button
             type="button"
             onClick={() => setSearchOpen(true)}

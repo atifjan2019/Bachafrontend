@@ -26,6 +26,7 @@ export const revalidate = 0;
 
 import { getSettings, type Settings } from "@/lib/api/settings";
 import { getCategories } from "@/lib/api/categories";
+import { resolveWhatsApp } from "@/lib/constants/social";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings().catch((): Settings => ({} as Settings));
@@ -39,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       settings.meta_description ||
       "Premium Pakistani fashion and lifestyle — traditional wear, waistcoats, Chitrali pakol caps, shawls, fragrances, footwear, and refined accessories. Nationwide delivery, Cash on Delivery, JazzCash and Easypaisa.",
-    metadataBase: new URL(settings.canonical_base_url || "https://bachastylo.pk"),
+    metadataBase: new URL(settings.canonical_base_url || "https://bachastylo.com"),
     icons: {
       icon: settings.favicon_url || "/images/BachaStylo%20favicon.png",
       shortcut: settings.favicon_url || "/images/BachaStylo%20favicon.png",
@@ -62,7 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <main className="flex-1">{children}</main>
           <Footer />
           <MobileNav />
-          <FloatingWhatsApp phone={settings?.whatsapp_number} />
+          <FloatingWhatsApp phone={resolveWhatsApp(settings?.whatsapp_number).number} />
         </ToastProvider>
       </body>
     </html>

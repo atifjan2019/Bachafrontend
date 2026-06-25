@@ -6,6 +6,7 @@ export const metadata: Metadata = {
 };
 
 import { PageHero } from "@/components/common/PageHero";
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
 
 export default function PrivacyPage() {
   return (
@@ -15,7 +16,7 @@ export default function PrivacyPage() {
       <section className="container-shop py-16 lg:py-20 max-w-3xl prose-policy">
         <h2>1. Information We Collect</h2>
         <p>
-          When you place an order or create an account on bachastylo.pk we collect your name, email
+          When you place an order or create an account on Bachastylo.com we collect your name, email
           address, phone number, shipping address, and payment details (processed securely by our
           payment partners). We also collect basic browsing data such as IP address, browser type,
           and pages visited through cookies and analytics tools.
@@ -54,7 +55,7 @@ export default function PrivacyPage() {
         <h2>6. Your Rights</h2>
         <p>
           You may request access to, correction of, or deletion of your personal data at any time by
-          emailing <strong>hello@bachastylo.pk</strong>. We will respond within 7 working days.
+          emailing <strong>{SUPPORT_EMAIL}</strong>. We will respond within 7 working days.
         </p>
 
         <h2>7. Children&apos;s Privacy</h2>
@@ -72,8 +73,8 @@ export default function PrivacyPage() {
 
         <h2>9. Contact</h2>
         <p>
-          Questions about this policy? Reach us at <strong>hello@bachastylo.pk</strong> or
-          call <strong>+92 300 1234 567</strong> (Mon–Sat, 10 am – 7 pm PKT).
+          Questions about this policy? Reach us at <strong>{SUPPORT_EMAIL}</strong> or
+          call <strong>{SUPPORT_PHONE}</strong> (Mon–Sat, 10 am – 7 pm PKT).
         </p>
       </section>
     </div>

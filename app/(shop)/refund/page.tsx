@@ -6,6 +6,7 @@ export const metadata: Metadata = {
 };
 
 import { PageHero } from "@/components/common/PageHero";
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
 
 export default function RefundPage() {
   return (
@@ -29,8 +30,8 @@ export default function RefundPage() {
         <h2>3. How to Initiate a Return</h2>
         <ol>
           <li>
-            Email <strong>hello@bachastylo.pk</strong> or message us on WhatsApp at
-            <strong> +92 300 1234 567</strong> with your order number and reason for return.
+            Email <strong>{SUPPORT_EMAIL}</strong> or message us on WhatsApp at
+            <strong> {SUPPORT_PHONE}</strong> with your order number and reason for return.
           </li>
           <li>Our team will confirm eligibility and arrange a reverse pickup at no extra cost.</li>
           <li>
@@ -69,13 +70,13 @@ export default function RefundPage() {
         <p>
           If you haven&apos;t received your refund within the stated timeframe, first check with your
           bank or payment provider. Processing times vary. If the issue persists,
-          email <strong>hello@bachastylo.pk</strong> and we&apos;ll investigate immediately.
+          email <strong>{SUPPORT_EMAIL}</strong> and we&apos;ll investigate immediately.
         </p>
 
         <h2>8. Contact</h2>
         <p>
-          Questions about returns or refunds? Reach us at <strong>hello@bachastylo.pk</strong> or
-          call <strong>+92 300 1234 567</strong> (Mon–Sat, 10 am – 7 pm PKT).
+          Questions about returns or refunds? Reach us at <strong>{SUPPORT_EMAIL}</strong> or
+          call <strong>{SUPPORT_PHONE}</strong> (Mon–Sat, 10 am – 7 pm PKT).
         </p>
       </section>
     </div>
