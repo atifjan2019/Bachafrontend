@@ -41,6 +41,10 @@ export async function generateMetadata(): Promise<Metadata> {
       settings.meta_description ||
       "Premium Pakistani fashion and lifestyle — traditional wear, waistcoats, Chitrali pakol caps, shawls, fragrances, footwear, and refined accessories. Nationwide delivery, Cash on Delivery, JazzCash and Easypaisa.",
     metadataBase: new URL(settings.canonical_base_url || "https://bachastylo.com"),
+    other: {
+      simpledcver:
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJiYWNoYXN0eWxvLmNvbSIsImV4cCI6MTc4Mjk1MDQwMH0.ygBW6WTYwg99HAxQFiM5JF5iYuDk5pjyPuxKg_gv80s",
+    },
     icons: {
       icon: settings.favicon_url || "/images/BachaStylo%20favicon.png",
       shortcut: settings.favicon_url || "/images/BachaStylo%20favicon.png",
