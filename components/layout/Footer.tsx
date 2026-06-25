@@ -101,6 +101,7 @@ export async function Footer() {
           links={[
             { href: "/privacy", label: "Privacy Policy" },
             { href: "/terms", label: "Terms & Conditions" },
+            { href: "/refund", label: "Refund Policy" },
           ]}
         />
       </div>
