@@ -127,7 +127,7 @@ export type Customer = {
   email?: string;
 };
 
-export type PaymentMethod = "cod" | "jazzcash" | "easypaisa";
+export type PaymentMethod = "cod" | "bank_transfer" | "easypaisa" | "jazzcash";
 
 export type Order = {
   id: string;
@@ -148,5 +148,7 @@ export type CheckoutPayload = {
   shipping_address: ShippingAddress;
   items: { product_id: number; variant_id: number; quantity: number; unit_price: number; name: string; size: string }[];
   payment_method: PaymentMethod;
+  /** URL of the uploaded payment receipt/screenshot (required for non-COD). */
+  payment_receipt?: string;
   notes?: string;
 };

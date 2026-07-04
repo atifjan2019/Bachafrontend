@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useCart } from "@/lib/store/cart";
 import { CartLineItem } from "./CartLineItem";
 import { CartSummary } from "./CartSummary";
+import { WhatsAppOrderButton } from "./WhatsAppOrderButton";
 import { EmptyCart } from "./EmptyCart";
 import { Button } from "@/components/ui/button";
 
@@ -41,6 +42,7 @@ export function CartDrawer() {
                   Proceed to Checkout
                 </Link>
               </Button>
+              <WhatsAppOrderButton onClick={closeCart} />
               <Button asChild variant="outline" className="w-full">
                 <Link href="/cart" onClick={closeCart}>
                   View Full Cart

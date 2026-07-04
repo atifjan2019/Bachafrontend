@@ -24,6 +24,32 @@ export interface Settings {
   home_highlight_image?: string;
   home_highlight_button?: string;
   home_highlight_link?: string;
+  /** Entry intro banner/video shown over the hero. "1" = enabled. */
+  intro_enabled?: string;
+  /** Which media drives the hero background: "image" | "video". */
+  intro_bg_type?: string;
+  intro_title?: string;
+  intro_subtitle?: string;
+  intro_image?: string;
+  /** Direct video file URL (.mp4/.webm) played inline when Play is clicked. */
+  intro_video_url?: string;
+  /** Facebook/Instagram/TikTok link opened when no inline video is set. */
+  intro_social_url?: string;
+  intro_button_text?: string;
+  // Checkout payment method toggles ("0" = disabled; missing/other = enabled)
+  cod_enabled?: string;
+  bank_transfer_enabled?: string;
+  easypaisa_enabled?: string;
+  jazzcash_enabled?: string;
+  // Checkout payment details (shown per method)
+  bank_name?: string;
+  bank_account_title?: string;
+  bank_account_number?: string;
+  bank_iban?: string;
+  easypaisa_account_name?: string;
+  easypaisa_number?: string;
+  jazzcash_account_name?: string;
+  jazzcash_number?: string;
   footer_about?: string;
 }
 

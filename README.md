@@ -70,7 +70,7 @@ Defined in `tailwind.config.ts`:
 - `ivory` `#FFFFFF` - cards
 - `border` `#E8E2D5` - warm borders
 - `gold` `#B8860B` - heritage accent dividers
-- Fonts: `font-display` (Playfair), `font-sans` (Inter), `font-nastaliq` (Noto Nastaliq Urdu)
+- Fonts: `font-display`, `font-sans`, `font-serif` all use the Montserrat family
 
 ## Project structure
 

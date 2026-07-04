@@ -25,15 +25,19 @@ export function CartLineItem({ line, compact = false }: { line: CartLine; compac
         </Link>
         <p className="text-xs text-muted mt-0.5">
           <span>Size {line.size}</span>
-          <span className="mx-1">&middot;</span>
-          <span className="inline-flex items-center gap-1">
-            <span
-              aria-hidden
-              className="inline-block h-2.5 w-2.5 rounded-full border border-border"
-              style={{ backgroundColor: line.color_hex }}
-            />
-            {line.color}
-          </span>
+          {line.color && line.color.trim().toLowerCase() !== "default" && (
+            <>
+              <span className="mx-1">&middot;</span>
+              <span className="inline-flex items-center gap-1">
+                <span
+                  aria-hidden
+                  className="inline-block h-2.5 w-2.5 rounded-full border border-border"
+                  style={{ backgroundColor: line.color_hex }}
+                />
+                {line.color}
+              </span>
+            </>
+          )}
         </p>
         <div className="mt-2 flex items-center justify-between gap-3">
           <QuantityStepper

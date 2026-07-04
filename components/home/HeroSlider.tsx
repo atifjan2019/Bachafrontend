@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Play, X } from "lucide-react";
+import type { Settings } from "@/lib/api/settings";
 
 const HERO_IMAGE =
   "https://media.bachastylo.com/media/c20808da-4ba4-4ea0-967f-16e75b9422bf.jpg";
@@ -11,18 +15,104 @@ const STATS = [
   { num: "4.9★", label: "Customer Rating" },
 ];
 
-export function HeroSlider() {
+/**
+ * Builds a muted, looping, autoplaying background embed URL for a YouTube or
+ * Vimeo link (used to render the intro video as the hero background). Returns
+ * null for anything else — those are treated as a direct video file.
+ */
+function getBackgroundEmbed(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+
+    let id: string | undefined;
+    if (host === "youtu.be") {
+      id = u.pathname.slice(1) || undefined;
+    } else if (host === "youtube.com" || host === "m.youtube.com") {
+      id =
+        u.searchParams.get("v") ||
+        u.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/)?.[1] ||
+        undefined;
+    }
+    if (id) {
+      return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
+    }
+
+    if (host === "vimeo.com") {
+      const vid = u.pathname.split("/").filter(Boolean)[0];
+      if (vid) {
+        return `https://player.vimeo.com/video/${vid}?autoplay=1&muted=1&loop=1&background=1`;
+      }
+    }
+  } catch {
+    // not a valid URL — fall through
+  }
+  return null;
+}
+
+export function HeroSlider({ settings }: { settings?: Settings }) {
+  const [dismissed, setDismissed] = useState(false);
+
+  const introEnabled = settings?.intro_enabled === "1";
+  const introImage = settings?.intro_image;
+  const introVideoUrl = settings?.intro_video_url;
+  const introSocialUrl = settings?.intro_social_url;
+  const introButton = settings?.intro_button_text;
+
+  const embedUrl = introVideoUrl ? getBackgroundEmbed(introVideoUrl) : null;
+  const isDirectVideo = Boolean(introVideoUrl && !embedUrl);
+
+  // The launch banner takes over the hero background until the visitor skips it.
+  const bannerActive = introEnabled && !dismissed;
+
+  // Admin picks image vs video; fall back to whichever media actually exists.
+  const bgType =
+    settings?.intro_bg_type || (introVideoUrl ? "video" : "image");
+  const showVideo = bannerActive && bgType === "video" && Boolean(introVideoUrl);
+  const showImage = bannerActive && !showVideo && Boolean(introImage);
+
   return (
     <section className="relative w-full overflow-hidden bg-brand-black text-white">
-      {/* Background image */}
-      <Image
-        src={HERO_IMAGE}
-        alt="Bacha Style collection"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center"
-      />
+      {/* Background: launch-banner media when active, else the default hero image */}
+      {showVideo && embedUrl ? (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <iframe
+            src={embedUrl}
+            title="Intro video"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            tabIndex={-1}
+            className="absolute left-1/2 top-1/2 aspect-video w-[max(100%,177.78vh)] min-h-full min-w-full -translate-x-1/2 -translate-y-1/2 border-0"
+          />
+        </div>
+      ) : showVideo && isDirectVideo ? (
+        <video
+          src={introVideoUrl}
+          poster={introImage}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+      ) : showImage && introImage ? (
+        // Admin-supplied banner image can be hosted anywhere, so use a plain
+        // <img> to bypass next/image's remote-host allowlist.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={introImage}
+          alt="Intro banner"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+      ) : (
+        <Image
+          src={HERO_IMAGE}
+          alt="Bacha Style collection"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      )}
 
       {/* Overlays for legibility */}
       <div className="absolute inset-0 bg-gradient-to-r from-brand-black/85 via-brand-black/55 to-brand-black/20" />
@@ -31,6 +121,19 @@ export function HeroSlider() {
 
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-red via-brand-red/50 to-transparent" />
+
+      {/* Skip / Close (X) — only for a video background; an image background is
+          simply the hero, with nothing to skip */}
+      {bannerActive && showVideo && (
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          aria-label="Skip intro banner"
+          className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-brand-black/40 text-white backdrop-blur-md transition-all duration-300 hover:border-brand-red hover:bg-brand-red sm:right-6 sm:top-6"
+        >
+          <X className="h-5 w-5" strokeWidth={2.5} />
+        </button>
+      )}
 
       {/* Side label (desktop) — pinned inside the left gutter so it never overlaps content */}
       <div className="pointer-events-none absolute left-0 top-0 bottom-0 hidden w-20 xl:block">
@@ -68,9 +171,25 @@ export function HeroSlider() {
           </p>
 
           <div className="mt-9 flex flex-col flex-wrap gap-3 sm:flex-row sm:gap-4">
+            {/* Play — video background only; redirects to the promo video (Facebook / Instagram / TikTok / YouTube) */}
+            {showVideo && introSocialUrl && (
+              <a
+                href={introSocialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center justify-center gap-3 bg-brand-red px-6 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-500 hover:bg-white hover:text-brand-black sm:px-8 sm:py-5 sm:text-[13px]"
+              >
+                <Play className="h-4 w-4 fill-current" strokeWidth={0} />
+                <span>{introButton || "Watch Video"}</span>
+              </a>
+            )}
             <Link
               href="/products"
-              className="group relative inline-flex items-center justify-center gap-3 overflow-hidden bg-brand-red px-6 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-500 hover:bg-white hover:text-brand-black sm:px-8 sm:py-5 sm:text-[13px]"
+              className={
+                showVideo && introSocialUrl
+                  ? "group inline-flex items-center justify-center gap-3 border-2 border-white/40 px-6 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:border-brand-red hover:text-brand-red sm:px-8 sm:py-5 sm:text-[13px]"
+                  : "group relative inline-flex items-center justify-center gap-3 overflow-hidden bg-brand-red px-6 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-500 hover:bg-white hover:text-brand-black sm:px-8 sm:py-5 sm:text-[13px]"
+              }
             >
               <span className="relative z-10">Shop the Collection</span>
               <ArrowUpRight
@@ -85,6 +204,17 @@ export function HeroSlider() {
               Explore Traditional Wear
             </Link>
           </div>
+
+          {/* Skip link — only for a video background */}
+          {bannerActive && showVideo && (
+            <button
+              type="button"
+              onClick={() => setDismissed(true)}
+              className="mt-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60 underline-offset-4 transition-colors hover:text-white hover:underline"
+            >
+              Skip intro
+            </button>
+          )}
 
           {/* Stats */}
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-4 border-t border-white/15 pt-6 sm:gap-6 lg:mt-16 lg:gap-12 lg:pt-8">

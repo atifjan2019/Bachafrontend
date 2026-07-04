@@ -141,14 +141,18 @@ export default function OrderDetailPage() {
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-brand-black truncate">{i.name}</p>
                     <p className="text-xs text-muted">
-                      {i.size && <span>{i.size}</span>}
-                      {i.color && (
+                      {i.size && (
                         <>
+                          <span>Size {i.size}</span>
                           <span className="mx-1">&middot;</span>
-                          <span>{i.color}</span>
                         </>
                       )}
-                      <span className="mx-1">&middot;</span>
+                      {i.color && i.color.trim().toLowerCase() !== "default" && (
+                        <>
+                          <span>{i.color}</span>
+                          <span className="mx-1">&middot;</span>
+                        </>
+                      )}
                       <span>Qty {i.quantity}</span>
                     </p>
                   </div>
@@ -181,11 +185,7 @@ export default function OrderDetailPage() {
           <div className="bg-ivory border border-border rounded-lg p-5">
             <h3 className="font-display text-lg mb-2">Payment</h3>
             <Badge tone="gold">
-              {order.payment_method === "cod"
-                ? "Cash on Delivery"
-                : order.payment_method === "jazzcash"
-                  ? "JazzCash"
-                  : "Easypaisa"}
+              {order.payment_method === "cod" ? "Cash on Delivery" : order.payment_method}
             </Badge>
           </div>
         </aside>

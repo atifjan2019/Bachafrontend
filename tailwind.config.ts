@@ -80,9 +80,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-playfair)", "Georgia", "serif"],
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        serif: ["var(--font-playfair)", "Georgia", "serif"],
+        display: ["var(--font-montserrat)", "system-ui", "sans-serif"],
+        sans: ["var(--font-montserrat)", "system-ui", "sans-serif"],
+        serif: ["var(--font-montserrat)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "12px",

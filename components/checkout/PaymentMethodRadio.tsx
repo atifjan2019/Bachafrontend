@@ -3,34 +3,75 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils/cn";
 import type { PaymentMethod } from "@/types";
+import type { Settings } from "@/lib/api/settings";
+import { paymentMethodRows } from "./paymentDetails";
 
 export function PaymentMethodRadio({
   value,
   onChange,
+  settings,
+  methods,
 }: {
   value: PaymentMethod;
   onChange: (v: PaymentMethod) => void;
+  settings?: Settings;
+  /** Which methods to show; defaults to all. Disabled ones are omitted. */
+  methods?: PaymentMethod[];
 }) {
+  const enabled = methods ?? ["cod", "bank_transfer", "easypaisa", "jazzcash"];
+  const bankRows = paymentMethodRows("bank_transfer", settings);
+  const easypaisaRows = paymentMethodRows("easypaisa", settings);
+  const jazzcashRows = paymentMethodRows("jazzcash", settings);
+
   return (
     <RadioGroup value={value} onValueChange={(v) => onChange(v as PaymentMethod)}>
-      <Option value="cod" current={value} title="Cash on Delivery" subtitle="Pay when it reaches your door.">
-        <p className="text-xs text-muted mt-2">
-          Our rider will collect the exact amount. Please keep change ready.
-        </p>
-      </Option>
-      <Option value="jazzcash" current={value} title="JazzCash" subtitle="Pay via JazzCash mobile account.">
-        <div className="text-xs text-muted mt-2 space-y-1">
-          <p>Send payment to JazzCash number <span className="font-medium text-brand-black">0300-1234567</span> (Bacha Stylo).</p>
-          <p>Share the TrxID on WhatsApp at the same number to confirm.</p>
-        </div>
-      </Option>
-      <Option value="easypaisa" current={value} title="Easypaisa" subtitle="Pay via Easypaisa mobile account.">
-        <div className="text-xs text-muted mt-2 space-y-1">
-          <p>Send payment to Easypaisa number <span className="font-medium text-brand-black">0345-1234567</span> (Bacha Stylo).</p>
-          <p>Share the TrxID on WhatsApp at the same number to confirm.</p>
-        </div>
-      </Option>
+      {enabled.includes("cod") && (
+        <Option value="cod" current={value} title="Cash on Delivery" subtitle="Pay when it reaches your door.">
+          <p className="text-xs text-muted">
+            Our rider will collect the exact amount at delivery. No payment proof needed — just place your order.
+          </p>
+        </Option>
+      )}
+      {enabled.includes("bank_transfer") && (
+        <Option value="bank_transfer" current={value} title="Bank Transfer" subtitle="Transfer to our bank account.">
+          <PaymentDetails rows={bankRows} />
+        </Option>
+      )}
+      {enabled.includes("easypaisa") && (
+        <Option value="easypaisa" current={value} title="EasyPaisa" subtitle="Pay via EasyPaisa mobile account.">
+          <PaymentDetails rows={easypaisaRows} />
+        </Option>
+      )}
+      {enabled.includes("jazzcash") && (
+        <Option value="jazzcash" current={value} title="JazzCash" subtitle="Pay via JazzCash mobile account.">
+          <PaymentDetails rows={jazzcashRows} />
+        </Option>
+      )}
     </RadioGroup>
+  );
+}
+
+/** Renders the admin-configured account details for a payment method. */
+function PaymentDetails({ rows }: { rows: { label: string; value?: string }[] }) {
+  const filled = rows.filter((r) => r.value && r.value.trim());
+  return (
+    <div className="space-y-2">
+      {filled.length > 0 ? (
+        <dl className="rounded-md bg-ink-5 p-3 text-xs">
+          {filled.map((r) => (
+            <div key={r.label} className="flex items-center justify-between gap-4 py-1">
+              <dt className="text-muted">{r.label}</dt>
+              <dd className="select-all text-right font-semibold text-brand-black">{r.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p className="text-xs text-muted">Payment details will be shared after you place the order.</p>
+      )}
+      <p className="text-xs font-medium text-brand-red">
+        After paying, upload your payment receipt/screenshot below before placing the order.
+      </p>
+    </div>
   );
 }
 

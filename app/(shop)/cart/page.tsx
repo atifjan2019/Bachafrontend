@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { CartLineItem } from "@/components/cart/CartLineItem";
 import { CartSummary } from "@/components/cart/CartSummary";
+import { WhatsAppOrderButton } from "@/components/cart/WhatsAppOrderButton";
 import { EmptyCart } from "@/components/cart/EmptyCart";
 import { Button } from "@/components/ui/button";
 import { GoldDivider } from "@/components/common/GoldDivider";
@@ -33,6 +34,7 @@ export default function CartPage() {
               <Button asChild className="w-full">
                 <Link href="/checkout">Proceed to Checkout</Link>
               </Button>
+              <WhatsAppOrderButton />
               <Button asChild variant="outline" className="w-full">
                 <Link href="/products">Continue Shopping</Link>
               </Button>

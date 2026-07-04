@@ -126,7 +126,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col bg-white">
       {/* ─── HERO ─────────────────────────────────────────────── */}
-      <HeroSlider />
+      <HeroSlider settings={settings} />
 
       {/* ─── MARQUEE ──────────────────────────────────────────── */}
       <section className="relative bg-brand-red text-white overflow-hidden py-2 sm:py-4 border-y-2 border-brand-black">

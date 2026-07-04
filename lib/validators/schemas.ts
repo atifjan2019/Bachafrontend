@@ -46,7 +46,7 @@ export const checkoutSchema = z.object({
   province: z.string().min(2, "Province is required"),
   postal_code: z.string().optional().or(z.literal("")),
   notes: z.string().optional(),
-  payment_method: z.enum(["cod", "jazzcash", "easypaisa"]),
+  payment_method: z.enum(["cod", "bank_transfer", "easypaisa", "jazzcash"]),
 });
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 

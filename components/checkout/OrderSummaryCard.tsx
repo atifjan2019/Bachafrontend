@@ -22,7 +22,8 @@ export function OrderSummaryCard() {
             <div className="flex-1 min-w-0">
               <p className="text-sm text-brand-black line-clamp-1">{l.name}</p>
               <p className="text-xs text-muted">
-                {l.size} &middot; {l.color}
+                Size {l.size}
+                {l.color && l.color.trim().toLowerCase() !== "default" ? ` · ${l.color}` : ""}
               </p>
             </div>
             <p className="text-sm font-medium">{formatPKR(l.unit_price * l.quantity)}</p>

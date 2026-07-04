@@ -15,6 +15,9 @@ import { SocialLinks } from "@/components/common/SocialLinks";
 import { useCart } from "@/lib/store/cart";
 import { useAuth } from "@/lib/store/auth";
 import { placeOrder } from "@/lib/api/orders";
+import { getSettings, type Settings } from "@/lib/api/settings";
+import { uploadReceipt } from "@/lib/api/upload";
+import { availablePaymentMethods } from "@/components/checkout/paymentDetails";
 import { EmptyCart } from "@/components/cart/EmptyCart";
 import { useToast } from "@/components/ui/toast";
 
@@ -27,11 +30,30 @@ export default function CheckoutPage() {
   const user = useAuth((s) => s.user);
   const { show } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const [settings, setSettings] = useState<Settings>({});
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptError, setReceiptError] = useState("");
 
   const form = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: { payment_method: "cod", city: "", province: "Sindh" },
   });
+
+  // Load admin-configured payment details for the checkout methods.
+  useEffect(() => {
+    getSettings().then(setSettings).catch(() => {});
+  }, []);
+
+  // Only offer methods the admin enabled. If the current selection (default COD)
+  // is disabled, fall back to the first available method.
+  const availableMethods = availablePaymentMethods(settings);
+  useEffect(() => {
+    const current = form.getValues("payment_method");
+    if (!availableMethods.includes(current)) {
+      form.setValue("payment_method", availableMethods[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
 
   // Auto-fill form with logged-in user's info
   useEffect(() => {
@@ -52,8 +74,25 @@ export default function CheckoutPage() {
   }
 
   async function onSubmit(values: CheckoutInput) {
+    // COD places immediately; all other methods require a payment receipt.
+    const requiresReceipt = values.payment_method !== "cod";
+    if (requiresReceipt && !receiptFile) {
+      setReceiptError("Please upload your payment receipt to continue.");
+      show({
+        title: "Receipt required",
+        description: "Upload your payment screenshot for this payment method.",
+        tone: "error",
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
+      let receiptUrl: string | undefined;
+      if (requiresReceipt && receiptFile) {
+        receiptUrl = await uploadReceipt(receiptFile);
+      }
+
       const order = await placeOrder({
         customer: { name: values.name, phone: values.phone, email: values.email || undefined },
         shipping_address: {
@@ -71,6 +110,7 @@ export default function CheckoutPage() {
           size: l.size,
         })),
         payment_method: values.payment_method,
+        payment_receipt: receiptUrl,
         notes: values.notes,
       });
       clear();
@@ -171,7 +211,35 @@ export default function CheckoutPage() {
             <PaymentMethodRadio
               value={payment}
               onChange={(v) => form.setValue("payment_method", v)}
+              settings={settings}
+              methods={availableMethods}
             />
+
+            {payment !== "cod" && (
+              <div className="mt-5 border-t border-ink-10 pt-5">
+                <Label htmlFor="receipt" className="text-[10px] lg:text-[11px] uppercase tracking-wider mb-1.5 block">
+                  Payment Receipt / Screenshot <span className="text-brand-red">*</span>
+                </Label>
+                <input
+                  id="receipt"
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    setReceiptFile(f);
+                    if (f) setReceiptError("");
+                  }}
+                  className="block w-full text-sm text-ink-70 file:mr-4 file:border-0 file:bg-brand-black file:px-4 file:py-2.5 file:text-xs file:font-bold file:uppercase file:tracking-wider file:text-white hover:file:bg-brand-red file:cursor-pointer cursor-pointer border border-ink-10"
+                />
+                {receiptFile && (
+                  <p className="mt-2 text-xs text-ink-70">Selected: <span className="font-medium">{receiptFile.name}</span></p>
+                )}
+                <FieldError>{receiptError}</FieldError>
+                <p className="mt-1 text-[11px] text-muted">
+                  Upload proof of your Bank Transfer / EasyPaisa / JazzCash payment (image or PDF) before placing the order.
+                </p>
+              </div>
+            )}
           </section>
 
           <div className="hidden lg:block pt-4">

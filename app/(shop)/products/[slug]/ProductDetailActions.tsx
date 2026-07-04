@@ -31,6 +31,11 @@ export function ProductDetailActions({
   const [color, setColor] = useState<string | null>(colors[0]?.color ?? null);
   const [qty, setQty] = useState(1);
 
+  // Absolute site origin for the product link in the WhatsApp message
+  // (resolved on the client to avoid a hydration mismatch).
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+
   const variant = useMemo(
     () => product.variants.find((v) => v.size === size && v.color === color) ?? null,
     [product.variants, size, color]
@@ -48,8 +53,23 @@ export function ProductDetailActions({
   const status = stockStatus(stock, product.low_stock_threshold);
 
   // Pre-filled WhatsApp order message (only when an admin number is configured).
+  // Includes chosen options, quantity, line total and a product link.
   const waNumber = whatsappNumber?.replace(/[^0-9]/g, "");
-  const waMessage = `Hi! I'd like to order:\n${product.name}${size ? ` (Size: ${size})` : ""}\nPrice: ${formatPKR(displayPrice)}`;
+  const waDetails = [
+    size ? `Size: ${size}` : null,
+    color && color.toLowerCase() !== "default" ? `Colour: ${color}` : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+  const waMessage = [
+    "Hi! I'd like to order:",
+    product.name,
+    waDetails || null,
+    `Qty: ${qty} × ${formatPKR(displayPrice)} = ${formatPKR(displayPrice * qty)}`,
+    origin ? `Link: ${origin}/products/${product.slug}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
   const waHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}` : null;
 
   const addLine = useCart((s) => s.addLine);

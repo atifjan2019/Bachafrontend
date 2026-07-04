@@ -56,6 +56,13 @@ export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
   const shipping_fee = subtotal >= threshold ? 0 : baseFee;
   const total_amount = subtotal + shipping_fee;
 
+  const PAYMENT_LABELS: Record<string, string> = {
+    cod: "Cash on Delivery",
+    bank_transfer: "Bank Transfer",
+    easypaisa: "EasyPaisa",
+    jazzcash: "JazzCash",
+  };
+
   const backendPayload = {
     customer_name: payload.customer.name,
     customer_email: payload.customer.email || "",
@@ -72,7 +79,8 @@ export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
     subtotal,
     shipping_fee,
     total_amount,
-    payment_method: payload.payment_method === "cod" ? "Cash on Delivery" : payload.payment_method,
+    payment_method: PAYMENT_LABELS[payload.payment_method] ?? payload.payment_method,
+    payment_receipt: payload.payment_receipt ?? null,
   };
 
   const res = await apiClient.post("/orders", backendPayload);

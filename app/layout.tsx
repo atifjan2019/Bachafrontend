@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -9,17 +9,11 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { FloatingWhatsApp } from "@/components/layout/FloatingWhatsApp";
 import { AuthHydrator } from "@/components/layout/AuthHydrator";
 
-const inter = Inter({
+// Montserrat powers the entire site (body + display headings).
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-montserrat",
   display: "swap",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-  weight: ["500", "600", "700"],
 });
 
 export const revalidate = 0;
@@ -54,7 +48,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const categories = await getCategories().catch(() => []);
 
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" className={montserrat.variable}>
       <body className="min-h-screen flex flex-col" cz-shortcut-listen="true">
         <ToastProvider>
           <AuthHydrator />
