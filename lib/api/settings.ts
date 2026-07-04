@@ -59,7 +59,7 @@ export interface Settings {
 // requests and client navigations.
 let settingsCache: { data: Settings; at: number } | null = null;
 let settingsInflight: Promise<Settings> | null = null;
-const SETTINGS_TTL = 60_000; // 1 minute
+const SETTINGS_TTL = 0; // Disabled cache to ensure instant updates
 
 export async function getSettings(): Promise<Settings> {
   if (settingsCache && Date.now() - settingsCache.at < SETTINGS_TTL) {

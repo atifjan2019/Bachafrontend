@@ -5,7 +5,7 @@ import { SocialLinks } from "@/components/common/SocialLinks";
 import { getSettings, type Settings } from "@/lib/api/settings";
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
 
-export const revalidate = 300;
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Contact — Bacha Stylo",

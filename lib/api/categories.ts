@@ -21,7 +21,7 @@ function adaptCategory(raw: Record<string, unknown>): Category {
 // categories. Deduping + a brief TTL turns those repeat round-trips into one.
 let categoriesCache: { data: Category[]; at: number } | null = null;
 let categoriesInflight: Promise<Category[]> | null = null;
-const CATEGORIES_TTL = 60_000; // 1 minute
+const CATEGORIES_TTL = 0; // Disabled cache to ensure instant updates
 
 export async function getCategories(): Promise<Category[]> {
   if (USE_MOCKS) {

@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 // Cache each blog post for 5 minutes (ISR).
-export const revalidate = 300;
+export const revalidate = 0;
 
 function plain(html: string) {
   return html.replace(/<[^>]*>?/gm, "");

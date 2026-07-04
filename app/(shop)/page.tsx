@@ -28,7 +28,7 @@ import {
   Feather,
 } from "lucide-react";
 
-export const revalidate = 300;
+export const revalidate = 0;
 
 // Short editorial taglines for spotlighted collections, keyed by category slug.
 // Falls back to DEFAULT_TAGLINE for any slug not listed here.

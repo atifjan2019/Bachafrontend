@@ -14,7 +14,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 // Cache each product page for 5 minutes (ISR) so repeat views are served
 // instantly instead of re-rendering + re-fetching on every request.
-export const revalidate = 300;
+export const revalidate = 0;
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -20,7 +20,7 @@ const montserrat = Montserrat({
 // Cache rendered pages for 5 minutes (ISR) instead of rendering every request.
 // Storefront content (settings, categories, catalog) is non-personalized and
 // changes rarely; admin edits still appear within the window.
-export const revalidate = 300;
+export const revalidate = 0;
 
 import { getSettings, type Settings } from "@/lib/api/settings";
 import { getCategories } from "@/lib/api/categories";
