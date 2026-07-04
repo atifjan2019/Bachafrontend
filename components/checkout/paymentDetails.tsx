@@ -4,7 +4,7 @@ import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { Settings } from "@/lib/api/settings";
 
-export type PaymentRow = { label: string; value?: string };
+export type PaymentRow = { label: string; value?: string; copy?: boolean };
 
 /** Account detail rows for a payment method, sourced from admin settings. */
 export function paymentMethodRows(methodKey: string, settings?: Settings): PaymentRow[] {
@@ -13,18 +13,18 @@ export function paymentMethodRows(methodKey: string, settings?: Settings): Payme
       return [
         { label: "Bank", value: settings?.bank_name },
         { label: "Account Title", value: settings?.bank_account_title },
-        { label: "Account Number", value: settings?.bank_account_number },
-        { label: "IBAN", value: settings?.bank_iban },
+        { label: "Account Number", value: settings?.bank_account_number, copy: true },
+        { label: "IBAN", value: settings?.bank_iban, copy: true },
       ];
     case "easypaisa":
       return [
         { label: "Account Name", value: settings?.easypaisa_account_name },
-        { label: "EasyPaisa Number", value: settings?.easypaisa_number },
+        { label: "EasyPaisa Number", value: settings?.easypaisa_number, copy: true },
       ];
     case "jazzcash":
       return [
         { label: "Account Name", value: settings?.jazzcash_account_name },
-        { label: "JazzCash Number", value: settings?.jazzcash_number },
+        { label: "JazzCash Number", value: settings?.jazzcash_number, copy: true },
       ];
     default:
       return [];
@@ -112,7 +112,13 @@ export function PaymentDetailsRows({ rows }: { rows: PaymentRow[] }) {
         <div key={r.label} className="flex items-center justify-between gap-4 py-1">
           <dt className="text-muted">{r.label}</dt>
           <dd className="text-right">
-            <CopyableValue value={(r.value as string).trim()} />
+            {r.copy ? (
+              <CopyableValue value={(r.value as string).trim()} />
+            ) : (
+              <span className="select-all font-semibold text-brand-black">
+                {(r.value as string).trim()}
+              </span>
+            )}
           </dd>
         </div>
       ))}

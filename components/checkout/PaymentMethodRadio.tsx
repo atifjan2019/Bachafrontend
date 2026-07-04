@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils/cn";
 import type { PaymentMethod } from "@/types";
 import type { Settings } from "@/lib/api/settings";
-import { paymentMethodRows } from "./paymentDetails";
+import { paymentMethodRows, PaymentDetailsRows } from "./paymentDetails";
 
 export function PaymentMethodRadio({
   value,
@@ -57,14 +57,7 @@ function PaymentDetails({ rows }: { rows: { label: string; value?: string }[] })
   return (
     <div className="space-y-2">
       {filled.length > 0 ? (
-        <dl className="rounded-md bg-ink-5 p-3 text-xs">
-          {filled.map((r) => (
-            <div key={r.label} className="flex items-center justify-between gap-4 py-1">
-              <dt className="text-muted">{r.label}</dt>
-              <dd className="select-all text-right font-semibold text-brand-black">{r.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <PaymentDetailsRows rows={rows} />
       ) : (
         <p className="text-xs text-muted">Payment details will be shared after you place the order.</p>
       )}

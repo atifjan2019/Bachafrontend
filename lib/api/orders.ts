@@ -43,6 +43,7 @@ function mapBackendOrder(d: any): Order {
     shipping_fee: Number(d.shipping_fee) || 0,
     total: Number(d.total_amount) || 0,
     payment_method: d.payment_method,
+    payment_receipt: d.payment_receipt || undefined,
     notes: d.notes,
   };
 }

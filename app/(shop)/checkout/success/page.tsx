@@ -3,12 +3,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { getOrder } from "@/lib/api/orders";
-import { getSettings, type Settings } from "@/lib/api/settings";
-import {
-  normalizePaymentMethod,
-  paymentMethodRows,
-  PaymentDetailsRows,
-} from "@/components/checkout/paymentDetails";
 import { GoldDivider } from "@/components/common/GoldDivider";
 import { SocialLinks } from "@/components/common/SocialLinks";
 import { Button } from "@/components/ui/button";
@@ -43,21 +37,11 @@ function SuccessInner() {
   const id = params.get("id");
   // undefined = still loading, null = no id / not found, Order = loaded
   const [order, setOrder] = useState<Order | null | undefined>(undefined);
-  const [settings, setSettings] = useState<Settings>({});
 
   useEffect(() => {
     if (id) getOrder(id).then((o) => setOrder(o ?? null));
     else setOrder(null);
   }, [id]);
-
-  useEffect(() => {
-    getSettings().then(setSettings).catch(() => {});
-  }, []);
-
-  // Payment account details for the chosen method (non-COD), from admin settings.
-  const methodKey = normalizePaymentMethod(order?.payment_method);
-  const payRows = paymentMethodRows(methodKey, settings);
-  const hasPayDetails = methodKey !== "cod" && payRows.some((r) => r.value && r.value.trim());
 
   return (
     <div className="container-shop py-14 lg:py-20">
@@ -164,15 +148,33 @@ function SuccessInner() {
               </div>
             </div>
 
-            {hasPayDetails && (
+            {order.payment_receipt && (
               <div className="bg-white border border-ink-10 p-6">
                 <h4 className="text-[10px] uppercase tracking-widest font-bold text-ink-30 mb-3">
-                  Payment Details — {order.payment_method}
+                  Payment Receipt
                 </h4>
-                <PaymentDetailsRows rows={payRows} />
+                {/\.pdf($|\?)/i.test(order.payment_receipt) ? (
+                  <a
+                    href={order.payment_receipt}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-brand-red underline underline-offset-4"
+                  >
+                    View uploaded receipt (PDF)
+                  </a>
+                ) : (
+                  <a href={order.payment_receipt} target="_blank" rel="noopener noreferrer" className="block">
+                    {/* Receipt can be hosted anywhere → plain <img>, not next/image. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={order.payment_receipt}
+                      alt="Payment receipt"
+                      className="max-h-80 w-auto rounded-md border border-ink-10"
+                    />
+                  </a>
+                )}
                 <p className="mt-3 text-[11px] text-ink-50 italic leading-relaxed">
-                  Payment account for your order. If you haven&apos;t completed the payment yet,
-                  please send the total to the account above and share your receipt with us.
+                  The payment receipt you submitted with this order. Our team will verify it shortly.
                 </p>
               </div>
             )}

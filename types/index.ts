@@ -140,6 +140,8 @@ export type Order = {
   shipping_fee: number;
   total: number;
   payment_method: PaymentMethod;
+  /** URL of the uploaded payment receipt/screenshot (non-COD orders). */
+  payment_receipt?: string;
   notes?: string;
 };
 
