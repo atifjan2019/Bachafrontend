@@ -2,15 +2,29 @@
 
 import { useState } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
+import { submitContact } from "@/lib/api/contact";
 
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError("");
+    const fd = new FormData(e.currentTarget);
     setStatus("sending");
-    await new Promise((r) => setTimeout(r, 800));
-    setStatus("sent");
+    try {
+      await submitContact({
+        name: String(fd.get("name") || ""),
+        email: String(fd.get("email") || ""),
+        subject: String(fd.get("subject") || ""),
+        message: String(fd.get("message") || ""),
+      });
+      setStatus("sent");
+    } catch {
+      setError("Sorry, your message could not be sent. Please try again or reach us on WhatsApp.");
+      setStatus("idle");
+    }
   }
 
   if (status === "sent") {
@@ -71,6 +85,12 @@ export function ContactForm() {
           className="w-full border-2 border-ink-10 focus:border-brand-red bg-white px-4 py-3 text-sm text-brand-black placeholder:text-ink-30 outline-none transition-colors resize-none"
         />
       </div>
+
+      {error && (
+        <p className="text-sm font-medium text-brand-red" role="alert">
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"

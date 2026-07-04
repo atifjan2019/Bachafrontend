@@ -8,6 +8,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { FloatingWhatsApp } from "@/components/layout/FloatingWhatsApp";
 import { AuthHydrator } from "@/components/layout/AuthHydrator";
+import { AbandonedCartTracker } from "@/components/cart/AbandonedCartTracker";
 
 // Montserrat powers the entire site (body + display headings).
 const montserrat = Montserrat({
@@ -56,6 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-screen flex flex-col" cz-shortcut-listen="true">
         <ToastProvider>
           <AuthHydrator />
+          <AbandonedCartTracker />
           <AnnouncementBar threshold={settings?.free_shipping_threshold} />
           <Header logoUrl={settings?.logo_url} categories={categories} />
           <main className="flex-1">{children}</main>

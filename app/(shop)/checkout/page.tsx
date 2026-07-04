@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/store/auth";
 import { placeOrder } from "@/lib/api/orders";
 import { getSettings, type Settings } from "@/lib/api/settings";
 import { uploadReceipt } from "@/lib/api/upload";
+import { captureAbandonedCart } from "@/lib/api/abandonedCart";
 import { availablePaymentMethods } from "@/components/checkout/paymentDetails";
 import { EmptyCart } from "@/components/cart/EmptyCart";
 import { useToast } from "@/components/ui/toast";
@@ -27,6 +28,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const lines = useCart((s) => s.lines);
   const clear = useCart((s) => s.clear);
+  const subtotal = useCart((s) => s.subtotal());
   const user = useAuth((s) => s.user);
   const { show } = useToast();
   const [submitting, setSubmitting] = useState(false);
@@ -64,6 +66,20 @@ export default function CheckoutPage() {
       if (user.address) form.setValue("full_address", user.address);
     }
   }, [user, form]);
+
+  // Capture guest carts for recovery: once a guest enters their email on
+  // checkout but hasn't completed the order, snapshot it (debounced).
+  // Logged-in users are captured globally by <AbandonedCartTracker/>.
+  const emailVal = form.watch("email");
+  const nameVal = form.watch("name");
+  const phoneVal = form.watch("phone");
+  useEffect(() => {
+    if (user) return;
+    const t = setTimeout(() => {
+      captureAbandonedCart({ name: nameVal, email: emailVal, phone: phoneVal, lines, total: subtotal });
+    }, 3500);
+    return () => clearTimeout(t);
+  }, [emailVal, nameVal, phoneVal, lines, subtotal, user]);
 
   if (lines.length === 0) {
     return (

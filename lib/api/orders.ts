@@ -20,7 +20,7 @@ function normalizeStatus(raw: string): OrderStatus {
 
 function mapBackendOrder(d: any): Order {
   return {
-    id: String(d.id),
+    id: String(d.reference ?? d.id),
     placed_at: d.created_at,
     status: normalizeStatus(d.status),
     customer: { name: d.customer_name, email: d.customer_email, phone: d.customer_phone },
@@ -91,9 +91,10 @@ export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
   const finalShipping = Number(data.shipping_fee ?? shipping_fee);
   const finalTotal = Number(data.total_amount ?? total_amount);
 
-  // Map backend response to frontend Order type
+  // Map backend response to frontend Order type. Prefer the non-sequential
+  // public reference (e.g. "BS-482913") so the internal id is never exposed.
   return {
-    id: String(data.id ?? newOrderId()),
+    id: String(data.reference ?? data.id ?? newOrderId()),
     placed_at: data.created_at ?? new Date().toISOString(),
     status: data.status ? normalizeStatus(data.status) : "pending",
     customer: payload.customer,
