@@ -7,6 +7,9 @@ import { GoldDivider } from "@/components/common/GoldDivider";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHero } from "@/components/common/PageHero";
 
+// Cache each category page for 5 minutes (ISR).
+export const revalidate = 300;
+
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [category, res] = await Promise.all([

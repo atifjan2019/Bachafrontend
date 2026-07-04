@@ -10,6 +10,14 @@ const nextConfig = {
       { protocol: "https", hostname: "admin.bachastylo.com" },
       { protocol: "https", hostname: "media.bachastylo.com" },
     ],
+    // Serve modern formats and cache optimized images longer (source URLs are
+    // stable / content-addressed, so re-optimization is wasteful).
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86400,
+  },
+  // Import only the icons actually used from lucide-react's barrel.
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
   },
 };
 

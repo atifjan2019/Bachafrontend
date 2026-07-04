@@ -70,23 +70,23 @@ function ProductsPageContent() {
     return () => clearTimeout(t);
   }, [search]);
 
-  // Reset to the first page whenever filters/sort change so we don't request
-  // a page number that no longer exists in the filtered result set.
+  // Reset to the first page whenever a server-side filter changes so we don't
+  // request a page number that no longer exists. Price/sort/size are client-side
+  // and don't affect the fetched page, so they're intentionally excluded.
   useEffect(() => {
     setPage(1);
-  }, [selectedCats, price, sort, debouncedSearch, collection, selectedSizes]);
+  }, [selectedCats, debouncedSearch, collection]);
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
+    // Price and sort are applied client-side (the backend ignores them), so they
+    // are NOT part of the fetch — changing them must not trigger a round-trip.
     const base = {
       search: debouncedSearch || undefined,
       featured: collection === "featured" || undefined,
       best_seller: collection === "best_seller" || undefined,
       is_new: collection === "new" || undefined,
-      min_price: price[0],
-      max_price: price[1],
-      sort,
     };
     async function run() {
       try {
@@ -121,7 +121,7 @@ function ProductsPageContent() {
     return () => {
       mounted = false;
     };
-  }, [selectedCats, price, sort, page, debouncedSearch, collection]);
+  }, [selectedCats, page, debouncedSearch, collection]);
 
   const filters = useMemo(
     () => (
@@ -143,15 +143,29 @@ function ProductsPageContent() {
     [categories, selectedCats, selectedSizes, price]
   );
 
-  // Size is filtered client-side (the backend doesn't support it), refining the
-  // loaded result set the same way the price filter does.
-  const visibleProducts = useMemo(
-    () =>
-      selectedSizes.length === 0
-        ? products
-        : products.filter((p) => p.variants.some((v) => selectedSizes.includes(v.size))),
-    [products, selectedSizes]
-  );
+  // Size, price and sort are all applied client-side over the loaded set (the
+  // backend supports none of them), so adjusting them re-filters instantly with
+  // no network request.
+  const visibleProducts = useMemo(() => {
+    let list = products;
+
+    if (selectedSizes.length > 0) {
+      list = list.filter((p) => p.variants.some((v) => selectedSizes.includes(v.size)));
+    }
+
+    list = list.filter((p) => {
+      const pr = p.sale_price ?? p.price;
+      return pr >= price[0] && pr <= price[1];
+    });
+
+    if (sort === "price_asc") {
+      list = [...list].sort((a, b) => (a.sale_price ?? a.price) - (b.sale_price ?? b.price));
+    } else if (sort === "price_desc") {
+      list = [...list].sort((a, b) => (b.sale_price ?? b.price) - (a.sale_price ?? a.price));
+    }
+
+    return list;
+  }, [products, selectedSizes, price, sort]);
 
   const activeFilterCount =
     selectedCats.length +

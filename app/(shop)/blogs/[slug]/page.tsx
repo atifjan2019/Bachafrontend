@@ -6,6 +6,9 @@ import { SocialLinks } from "@/components/common/SocialLinks";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+// Cache each blog post for 5 minutes (ISR).
+export const revalidate = 300;
+
 function plain(html: string) {
   return html.replace(/<[^>]*>?/gm, "");
 }

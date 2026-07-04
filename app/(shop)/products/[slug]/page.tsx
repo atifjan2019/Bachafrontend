@@ -12,6 +12,10 @@ import { GoldDivider } from "@/components/common/GoldDivider";
 import { ProductDetailActions } from "./ProductDetailActions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
+// Cache each product page for 5 minutes (ISR) so repeat views are served
+// instantly instead of re-rendering + re-fetching on every request.
+export const revalidate = 300;
+
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await getProduct(slug);
