@@ -9,7 +9,12 @@ export const USE_MOCKS =
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "https://admin.bachastylo.com/api/v1",
   timeout: 15000,
-  headers: { Accept: "application/json" },
+  headers: { 
+    Accept: "application/json",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0"
+  },
 });
 
 // Automatically retry requests if they hit Laravel's rate limit (capped)
