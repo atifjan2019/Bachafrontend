@@ -17,9 +17,18 @@ export interface Founder {
   initials?: string | null;
 }
 
+export interface Story {
+  heading?: string | null;
+  accent?: string | null;
+  body?: string | null;
+  location?: string | null;
+  image?: string | null;
+}
+
 export interface AboutContent {
   team: TeamMember[];
   founder: Founder;
+  story: Story;
 }
 
 /**

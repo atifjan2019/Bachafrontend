@@ -63,6 +63,15 @@ const DEFAULT_TEAM = [
   { icon: "palette", title: "Creative / Brand Director", subtitle: "Design & identity", bio: null as string | null, image: null as string | null },
 ];
 
+const DEFAULT_STORY = {
+  heading: "Rooted in tradition,",
+  accent: "built on trust.",
+  body:
+    "Bacha Stylo started from Lower Dir, KPK with a simple vision — to create a trusted fashion identity rooted in tradition, honesty, and quality.\n\nWhat began with traditional wear has now grown into a broader lifestyle brand offering clothes, waistcoats, Chitrali pakols, caps, shawls, fragrances, footwear, and personal care products. Every product reflects our belief in authenticity, fair pricing, and customer satisfaction.",
+  location: "Lower Dir, KPK",
+  image: null as string | null,
+};
+
 const DEFAULT_FOUNDER = {
   name: "Muhammad Ali Shah Bacha",
   role: "Founder & CEO",
@@ -106,6 +115,13 @@ export default async function AboutPage() {
       .join("")
       .toUpperCase();
   const founderParagraphs = (founder.bio ?? "")
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const story =
+    about?.story && (about.story.heading || about.story.body) ? about.story : DEFAULT_STORY;
+  const storyParagraphs = (story.body ?? "")
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean);
@@ -314,13 +330,24 @@ export default async function AboutPage() {
           <div className="relative order-2 aspect-[4/5] overflow-hidden sm:aspect-[16/11] lg:order-1 lg:aspect-[4/5]">
             <div className="absolute inset-0 bg-gradient-to-br from-brand-black via-brand-black-soft to-[#2a1116]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(232,29,37,0.22)_0%,transparent_60%)]" />
-              <span className="absolute inset-0 flex items-center justify-center font-display text-[5rem] font-bold leading-none text-white/[0.07] sm:text-[7rem]">
-                BS
-              </span>
+              {story.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={story.image}
+                  alt={story.heading ?? "Our story"}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <span className="absolute inset-0 flex items-center justify-center font-display text-[5rem] font-bold leading-none text-white/[0.07] sm:text-[7rem]">
+                  BS
+                </span>
+              )}
             </div>
-            <div className="absolute bottom-5 left-5 inline-flex items-center gap-2 bg-brand-red px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-red-glow-lg">
-              <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} /> Lower Dir, KPK
-            </div>
+            {story.location ? (
+              <div className="absolute bottom-5 left-5 inline-flex items-center gap-2 bg-brand-red px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-red-glow-lg">
+                <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} /> {story.location}
+              </div>
+            ) : null}
           </div>
 
           {/* Story copy */}
@@ -332,20 +359,18 @@ export default async function AboutPage() {
               </span>
             </div>
             <h2 className="font-display text-3xl font-bold tracking-tightest text-brand-black sm:text-4xl lg:text-5xl">
-              Rooted in tradition,{" "}
-              <span className="italic text-brand-red">built on trust.</span>
+              {story.heading}
+              {story.accent ? (
+                <>
+                  {" "}
+                  <span className="italic text-brand-red">{story.accent}</span>
+                </>
+              ) : null}
             </h2>
             <div className="mt-6 space-y-4 text-base leading-relaxed text-ink-70 sm:text-lg">
-              <p>
-                Bacha Stylo started from Lower Dir, KPK with a simple vision — to create a trusted
-                fashion identity rooted in tradition, honesty, and quality.
-              </p>
-              <p>
-                What began with traditional wear has now grown into a broader lifestyle brand
-                offering clothes, waistcoats, Chitrali pakols, caps, shawls, fragrances, footwear,
-                and personal care products. Every product reflects our belief in authenticity, fair
-                pricing, and customer satisfaction.
-              </p>
+              {storyParagraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
             </div>
           </div>
         </div>
