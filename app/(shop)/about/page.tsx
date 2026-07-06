@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import type { ComponentType } from "react";
 import { getSettings } from "@/lib/api/settings";
+import { getAbout } from "@/lib/api/about";
 import { resolveWhatsApp } from "@/lib/constants/social";
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
 import {
@@ -18,6 +20,12 @@ import {
   Repeat,
   Quote,
   MapPin,
+  Users,
+  Star,
+  Sparkles,
+  Truck,
+  Heart,
+  Briefcase,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -26,13 +34,43 @@ export const metadata: Metadata = {
     "The people, vision, and values behind Bacha Stylo — a trusted Pakistani fashion and lifestyle brand rooted in quality, honesty, and modern elegance.",
 };
 
-const TEAM_ROLES = [
-  { icon: Crown, title: "Founder / CEO", desc: "Vision & leadership" },
-  { icon: ClipboardList, title: "Operations Manager", desc: "Fulfilment & logistics" },
-  { icon: Megaphone, title: "Marketing Manager", desc: "Growth & brand reach" },
-  { icon: Headphones, title: "Customer Support Lead", desc: "Care & after-sales" },
-  { icon: Palette, title: "Creative / Brand Director", desc: "Design & identity" },
+// Maps admin-selected icon keys to lucide components.
+const ICON_MAP: Record<string, ComponentType<{ className?: string; strokeWidth?: number }>> = {
+  crown: Crown,
+  clipboard: ClipboardList,
+  megaphone: Megaphone,
+  headphones: Headphones,
+  palette: Palette,
+  users: Users,
+  star: Star,
+  gem: Gem,
+  shield: ShieldCheck,
+  landmark: Landmark,
+  repeat: Repeat,
+  heart: Heart,
+  sparkles: Sparkles,
+  truck: Truck,
+  tag: Tag,
+  briefcase: Briefcase,
+};
+
+// Fallback used if the API is unreachable or returns no team members.
+const DEFAULT_TEAM = [
+  { icon: "crown", title: "Founder / CEO", subtitle: "Vision & leadership", bio: null as string | null, image: null as string | null },
+  { icon: "clipboard", title: "Operations Manager", subtitle: "Fulfilment & logistics", bio: null as string | null, image: null as string | null },
+  { icon: "megaphone", title: "Marketing Manager", subtitle: "Growth & brand reach", bio: null as string | null, image: null as string | null },
+  { icon: "headphones", title: "Customer Support Lead", subtitle: "Care & after-sales", bio: null as string | null, image: null as string | null },
+  { icon: "palette", title: "Creative / Brand Director", subtitle: "Design & identity", bio: null as string | null, image: null as string | null },
 ];
+
+const DEFAULT_FOUNDER = {
+  name: "Muhammad Ali Shah Bacha",
+  role: "Founder & CEO",
+  bio:
+    "Muhammad Ali Shah Bacha is the founder of Bacha Stylo Fashion, a fashion and lifestyle brand built on years of practical experience and market understanding. With over 11 years of involvement in the fashion and lifestyle industry, he has focused on continuous research, product selection, and learning from real market conditions to develop a strong sense of customer needs and trends.\n\nHis journey began at a very small level with limited resources, but through consistency, honesty, and customer satisfaction, he gradually built trust in the market — which became the foundation of the brand's growth.",
+  image: null as string | null,
+  initials: "MA",
+};
 
 const MISSION = [
   "Deliver high-quality fashion, fragrances, beauty care, and lifestyle products at fair prices.",
@@ -51,8 +89,26 @@ const VALUES = [
 ];
 
 export default async function AboutPage() {
-  const settings = await getSettings().catch(() => null);
+  const [settings, about] = await Promise.all([
+    getSettings().catch(() => null),
+    getAbout(),
+  ]);
   const waHref = resolveWhatsApp(settings?.whatsapp_number).href;
+
+  const team = about?.team?.length ? about.team : DEFAULT_TEAM;
+  const founder = about?.founder?.name ? about.founder : DEFAULT_FOUNDER;
+  const founderInitials =
+    founder.initials?.trim() ||
+    founder.name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase();
+  const founderParagraphs = (founder.bio ?? "")
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   return (
     <div className="flex flex-col bg-white">
@@ -99,31 +155,50 @@ export default async function AboutPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
-            {TEAM_ROLES.map((role) => (
-              <div
-                key={role.title}
-                className="group overflow-hidden border border-ink-10 bg-white transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-24px_rgba(20,20,20,0.4)]"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-brand-black via-brand-black-soft to-[#241015]">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,29,37,0.22)_0%,transparent_60%)]" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <role.icon
-                      className="h-12 w-12 text-white/25 transition-transform duration-500 group-hover:scale-110"
-                      strokeWidth={1.25}
-                    />
+            {team.map((role, i) => {
+              const Icon = ICON_MAP[role.icon ?? ""] ?? Users;
+              return (
+                <div
+                  key={`${role.title}-${i}`}
+                  className="group overflow-hidden border border-ink-10 bg-white transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-24px_rgba(20,20,20,0.4)]"
+                >
+                  <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-brand-black via-brand-black-soft to-[#241015]">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,29,37,0.22)_0%,transparent_60%)]" />
+                    {role.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={role.image}
+                        alt={role.title}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Icon
+                          className="h-12 w-12 text-white/25 transition-transform duration-500 group-hover:scale-110"
+                          strokeWidth={1.25}
+                        />
+                      </div>
+                    )}
+                    <div className="absolute left-0 top-0 h-0.5 w-0 bg-brand-red transition-all duration-500 group-hover:w-full" />
                   </div>
-                  <div className="absolute left-0 top-0 h-0.5 w-0 bg-brand-red transition-all duration-500 group-hover:w-full" />
+                  <div className="p-4 text-center sm:p-5">
+                    <h3 className="font-display text-base font-bold leading-tight text-brand-black sm:text-lg">
+                      {role.title}
+                    </h3>
+                    {role.subtitle ? (
+                      <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-red">
+                        {role.subtitle}
+                      </p>
+                    ) : null}
+                    {role.bio ? (
+                      <p className="mt-2.5 text-xs leading-relaxed text-ink-70">
+                        {role.bio}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
-                <div className="p-4 text-center sm:p-5">
-                  <h3 className="font-display text-base font-bold leading-tight text-brand-black sm:text-lg">
-                    {role.title}
-                  </h3>
-                  <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-red">
-                    {role.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -135,9 +210,18 @@ export default async function AboutPage() {
           <div className="relative order-2 mx-auto w-full max-w-sm lg:order-1 lg:col-span-5">
             <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-brand-black via-brand-black-soft to-[#2a1116]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_40%_25%,rgba(232,29,37,0.25)_0%,transparent_60%)]" />
-              <span className="absolute inset-0 flex items-center justify-center font-display text-[7rem] font-bold leading-none text-white/10">
-                MA
-              </span>
+              {founder.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={founder.image}
+                  alt={founder.name}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <span className="absolute inset-0 flex items-center justify-center font-display text-[7rem] font-bold leading-none text-white/10">
+                  {founderInitials}
+                </span>
+              )}
             </div>
             <div className="absolute -left-3 -top-3 h-14 w-14 border-l-2 border-t-2 border-brand-red sm:-left-4 sm:-top-4 sm:h-20 sm:w-20" />
             <div className="absolute -bottom-3 -right-3 h-14 w-14 border-b-2 border-r-2 border-brand-red sm:-bottom-4 sm:-right-4 sm:h-20 sm:w-20" />
@@ -148,25 +232,16 @@ export default async function AboutPage() {
             <div className="mb-5 flex items-center gap-3">
               <span className="h-[2px] w-10 bg-brand-red" />
               <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">
-                Founder &amp; CEO
+                {founder.role || "Founder & CEO"}
               </span>
             </div>
             <h2 className="font-display text-3xl font-bold tracking-tightest text-brand-black sm:text-4xl lg:text-5xl">
-              Muhammad Ali Shah Bacha
+              {founder.name}
             </h2>
             <div className="mt-6 space-y-4 text-base leading-relaxed text-ink-70 sm:text-lg">
-              <p>
-                Muhammad Ali Shah Bacha is the founder of Bacha Stylo Fashion, a fashion and
-                lifestyle brand built on years of practical experience and market understanding.
-                With over 11 years of involvement in the fashion and lifestyle industry, he has
-                focused on continuous research, product selection, and learning from real market
-                conditions to develop a strong sense of customer needs and trends.
-              </p>
-              <p>
-                His journey began at a very small level with limited resources, but through
-                consistency, honesty, and customer satisfaction, he gradually built trust in the
-                market — which became the foundation of the brand&apos;s growth.
-              </p>
+              {founderParagraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
             </div>
           </div>
         </div>
