@@ -36,6 +36,19 @@ export interface Settings {
   /** Facebook/Instagram/TikTok link opened when no inline video is set. */
   intro_social_url?: string;
   intro_button_text?: string;
+  /** Promotional popup shown over the page on site open, above the hero. "1" = enabled. */
+  promo_enabled?: string;
+  /** What the popup shows: "image" | "video" | "link". */
+  promo_media_type?: string;
+  promo_title?: string;
+  promo_subtitle?: string;
+  /** Banner/animated image shown in the popup. */
+  promo_image?: string;
+  /** Uploaded video file URL, or a YouTube/Vimeo/.mp4 link embedded in the popup. */
+  promo_video_url?: string;
+  /** External link (TikTok/YouTube/etc.) opened by the Watch/Open button. */
+  promo_link?: string;
+  promo_button_text?: string;
   // Checkout payment method toggles ("0" = disabled; missing/other = enabled)
   cod_enabled?: string;
   bank_transfer_enabled?: string;

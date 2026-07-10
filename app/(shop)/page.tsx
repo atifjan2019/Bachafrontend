@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { HeroSlider } from "@/components/home/HeroSlider";
+import { PromoPopup } from "@/components/home/PromoPopup";
 import { ProductCard } from "@/components/product/ProductCard";
 import { getCategories } from "@/lib/api/categories";
 import { getFeatured, getBestSellers } from "@/lib/api/products";
@@ -125,6 +126,9 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
+      {/* ─── PROMOTIONAL POPUP (admin-controlled, shown over the page on open) ── */}
+      <PromoPopup settings={settings} />
+
       {/* ─── HERO ─────────────────────────────────────────────── */}
       <HeroSlider settings={settings} />
 
