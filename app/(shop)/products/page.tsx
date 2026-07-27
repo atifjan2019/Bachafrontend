@@ -26,6 +26,22 @@ const COLLECTIONS: { key: Collection; label: string }[] = [
   { key: "new", label: "New Arrivals" },
 ];
 
+/** A category's own slug plus every descendant slug (depth-first). */
+function collectSlugs(cat: Category): string[] {
+  const kids = cat.children?.flatMap(collectSlugs) ?? [];
+  return [cat.slug, ...kids];
+}
+
+/** Locate a category anywhere in the (possibly nested) tree by slug. */
+function findCategory(cats: Category[], slug: string): Category | undefined {
+  for (const c of cats) {
+    if (c.slug === slug) return c;
+    const found = c.children ? findCategory(c.children, slug) : undefined;
+    if (found) return found;
+  }
+  return undefined;
+}
+
 function ProductsPageContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
@@ -98,12 +114,29 @@ function ProductsPageContent() {
             setTotal(res.meta.total);
           }
         } else {
-          const all = await Promise.all(
-            selectedCats.map((c) =>
+          // Selecting a parent category must also surface products filed under
+          // its child categories, so expand each selected slug to include its
+          // descendants (falls back to the raw slug until the tree loads).
+          const slugsToFetch = Array.from(
+            new Set(
+              selectedCats.flatMap((slug) => {
+                const cat = findCategory(categories, slug);
+                return cat ? collectSlugs(cat) : [slug];
+              })
+            )
+          );
+          // allSettled (not all) so one slow/timed-out category request doesn't
+          // reject the whole batch and blank the page — keep whatever succeeds.
+          const all = await Promise.allSettled(
+            slugsToFetch.map((c) =>
               getProducts({ ...base, category: c, page: 1, per_page: 60 })
             )
           );
-          const merged = all.flatMap((r) => r.data);
+          // A product could match more than one fetched slug — dedupe by id.
+          const seen = new Set<number>();
+          const merged = all
+            .flatMap((r) => (r.status === "fulfilled" ? r.value.data : []))
+            .filter((p) => (seen.has(p.id) ? false : seen.add(p.id)));
           if (mounted) {
             setProducts(merged);
             setLastPage(1);
@@ -121,7 +154,7 @@ function ProductsPageContent() {
     return () => {
       mounted = false;
     };
-  }, [selectedCats, page, debouncedSearch, collection]);
+  }, [selectedCats, page, debouncedSearch, collection, categories]);
 
   const filters = useMemo(
     () => (
