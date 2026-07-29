@@ -31,7 +31,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <nav className="text-sm text-muted mb-6" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-brand-red">Home</Link>
         <span className="mx-2">/</span>
-        <Link href={`/category/${product.category.slug}`} className="hover:text-brand-red">
+        <Link href={`/products?category=${product.category.slug}`} className="hover:text-brand-red">
           {product.category.name}
         </Link>
         <span className="mx-2">/</span>

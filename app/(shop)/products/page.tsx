@@ -1,6 +1,6 @@
 "use client";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getProducts } from "@/lib/api/products";
 import { getCategories } from "@/lib/api/categories";
@@ -43,16 +43,32 @@ function findCategory(cats: Category[], slug: string): Category | undefined {
 }
 
 function ProductsPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("category");
   const searchParam = searchParams.get("search") ?? "";
+
+  // The URL is the single source of truth for the category filter — links in
+  // (category cards, mega menu) and toggles out (checkboxes, chips) both go
+  // through ?category=. Joined into a string first so the memo dependency is a
+  // primitive and the array identity stays stable between renders.
+  const categoryKey = searchParams.getAll("category").join(",");
+  const selectedCats = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          categoryKey
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        )
+      ),
+    [categoryKey]
+  );
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCats, setSelectedCats] = useState<string[]>(
-    categoryParam ? [categoryParam] : []
-  );
   const [search, setSearch] = useState(searchParam);
   const [debouncedSearch, setDebouncedSearch] = useState(searchParam);
   const [collection, setCollection] = useState<Collection>("all");
@@ -68,11 +84,19 @@ function ProductsPageContent() {
     getCategories().then(setCategories);
   }, []);
 
-  // Drive the category filter from the ?category= URL param (e.g. the mega-menu
-  // links to /products?category=waistcoats). Re-syncs on client navigation.
-  useEffect(() => {
-    setSelectedCats(categoryParam ? [categoryParam] : []);
-  }, [categoryParam]);
+  // Write the selection back to ?category= so the URL always matches what is
+  // ticked — shareable, refresh-safe, and no stale param after toggling. replace
+  // (not push) keeps every checkbox click out of the back-button history.
+  const setSelectedCats = useCallback(
+    (next: string[]) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("category");
+      next.forEach((slug) => params.append("category", slug));
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [router, pathname, searchParams]
+  );
 
   // Drive the search box from the ?search= URL param (header search overlay).
   useEffect(() => {
@@ -173,7 +197,7 @@ function ProductsPageContent() {
         </div>
       </div>
     ),
-    [categories, selectedCats, selectedSizes, price]
+    [categories, selectedCats, setSelectedCats, selectedSizes, price]
   );
 
   // Size, price and sort are all applied client-side over the loaded set (the
@@ -200,6 +224,12 @@ function ProductsPageContent() {
     return list;
   }, [products, selectedSizes, price, sort]);
 
+  // Categories don't have their own pages — arriving from a category card just
+  // pre-selects the filter here, so a single-category selection takes over the
+  // hero to keep that "dedicated collection" feel.
+  const activeCategory =
+    selectedCats.length === 1 ? findCategory(categories, selectedCats[0]) : undefined;
+
   const activeFilterCount =
     selectedCats.length +
     selectedSizes.length +
@@ -209,9 +239,14 @@ function ProductsPageContent() {
     <div className="flex flex-col">
       {/* Hero */}
       <PageHero
-        eyebrow="Shop"
-        title="All Products"
-        subtitle={`${total} ${total === 1 ? "piece" : "pieces"} stitched with care`}
+        eyebrow={activeCategory ? "Shop by category" : "Shop"}
+        title={activeCategory?.name ?? "All Products"}
+        subtitle={
+          activeCategory
+            ? `${total} ${total === 1 ? "piece" : "pieces"} curated for ${activeCategory.name.toLowerCase()}`
+            : `${total} ${total === 1 ? "piece" : "pieces"} stitched with care`
+        }
+        image={activeCategory?.image || undefined}
         variant="dark"
         align="center"
       />
@@ -268,11 +303,13 @@ function ProductsPageContent() {
             {/* Active filter chips (desktop) */}
             <div className="flex flex-wrap items-center gap-2">
               {selectedCats.map((slug) => {
-                const cat = categories.find((c) => c.slug === slug);
+                // Search the whole tree — a child category chip should show its
+                // name, not the raw slug.
+                const cat = findCategory(categories, slug);
                 return (
                   <button
                     key={slug}
-                    onClick={() => setSelectedCats((v) => v.filter((s) => s !== slug))}
+                    onClick={() => setSelectedCats(selectedCats.filter((s) => s !== slug))}
                     className="inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition"
                   >
                     {cat?.name ?? slug}

@@ -117,7 +117,7 @@ export default async function HomePage() {
           subtitle: formatPKR(p.sale_price ?? p.price),
         }))
       : categories.slice(0, 3).map((c) => ({
-          href: `/category/${c.slug}`,
+          href: `/products?category=${c.slug}`,
           image: c.image || undefined,
           eyebrow: "Collection",
           title: c.name,
@@ -172,7 +172,7 @@ export default async function HomePage() {
             {categories.slice(0, 9).map((c, idx) => (
               <Link
                 key={c.slug}
-                href={`/category/${c.slug}`}
+                href={`/products?category=${c.slug}`}
                 className="group relative block overflow-hidden bg-brand-black shadow-[0_2px_20px_-10px_rgba(20,20,20,0.25)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_35px_60px_-20px_rgba(20,20,20,0.5)]"
               >
                 <div className="relative aspect-[3/4] overflow-hidden">

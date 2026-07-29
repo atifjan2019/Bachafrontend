@@ -19,6 +19,23 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
+  // Categories no longer have their own pages — every category link funnels
+  // into the shop page with the category filter pre-selected. This keeps old
+  // bookmarks, indexed URLs and admin-configured /category/* links working.
+  async redirects() {
+    return [
+      {
+        source: "/category/:slug",
+        destination: "/products?category=:slug",
+        permanent: true,
+      },
+      {
+        source: "/category",
+        destination: "/products",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

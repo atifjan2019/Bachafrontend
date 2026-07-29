@@ -198,7 +198,7 @@ export function HeroSlider({ settings }: { settings?: Settings }) {
               />
             </Link>
             <Link
-              href="/category/traditional-wear"
+              href="/products?category=traditional-wear"
               className="inline-flex items-center justify-center gap-3 border-2 border-white/40 px-6 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:border-brand-red hover:text-brand-red sm:px-8 sm:py-5 sm:text-[13px]"
             >
               Explore Traditional Wear
