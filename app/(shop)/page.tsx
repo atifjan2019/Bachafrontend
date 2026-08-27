@@ -169,7 +169,7 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-5">
-            {categories.slice(0, 9).map((c, idx) => (
+            {categories.map((c, idx) => (
               <Link
                 key={c.slug}
                 href={`/products?category=${c.slug}`}
