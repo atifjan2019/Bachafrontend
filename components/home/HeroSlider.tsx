@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import Link from "next/link";
 import { ArrowUpRight, Play, X } from "lucide-react";
 import type { Settings } from "@/lib/api/settings";
@@ -52,6 +52,9 @@ function getBackgroundEmbed(url: string): string | null {
 
 export function HeroSlider({ settings }: { settings?: Settings }) {
   const [dismissed, setDismissed] = useState(false);
+  // Set when the admin banner image 404s, so the hero falls through to its
+  // default background instead of showing a broken image.
+  const [bannerFailed, setBannerFailed] = useState(false);
 
   const introEnabled = settings?.intro_enabled === "1";
   const introImage = settings?.intro_image;
@@ -94,23 +97,27 @@ export function HeroSlider({ settings }: { settings?: Settings }) {
           playsInline
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
-      ) : showImage && introImage ? (
+      ) : showImage && introImage && !bannerFailed ? (
         // Admin-supplied banner image can be hosted anywhere, so use a plain
-        // <img> to bypass next/image's remote-host allowlist.
+        // <img> to bypass next/image's remote-host allowlist. On failure we
+        // drop to the default hero rather than leaving a broken-image box
+        // across the fold.
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={introImage}
           alt="Intro banner"
+          onError={() => setBannerFailed(true)}
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
       ) : (
-        <Image
+        <SafeImage
           src={HERO_IMAGE}
           alt="Bacha Style collection"
           fill
           priority
           sizes="100vw"
           className="object-cover object-center"
+          fallback={null}
         />
       )}
 

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/common/PageHero";
@@ -204,23 +204,25 @@ function BlogImage({
   sizes: string;
   fallback: string;
 }) {
-  if (src) {
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={sizes}
-        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-      />
-    );
-  }
-  return (
+  // The same panel is used whether the post never had an image or its image
+  // 404s on the CDN, so a dead record looks identical to an empty one.
+  const panel = (
     <div className="absolute inset-0 bg-gradient-to-br from-brand-black via-brand-black-soft to-[#2a1116]">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(232,29,37,0.2)_0%,transparent_60%)]" />
       <span className="absolute inset-0 flex items-center justify-center font-display text-6xl font-bold text-white/10">
         {fallback.charAt(0).toUpperCase()}
       </span>
     </div>
+  );
+
+  return (
+    <SafeImage
+      src={src}
+      alt={alt}
+      fill
+      sizes={sizes}
+      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+      fallback={panel}
+    />
   );
 }

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 
 interface PageHeroProps {
   eyebrow: string;
@@ -28,13 +28,20 @@ export function PageHero({
       {/* Background image */}
       {image && (
         <>
-          <Image
+          <SafeImage
             src={image}
             alt=""
             fill
             priority
             sizes="100vw"
+            // Decorative backdrop: it sits at 50% opacity under a heavy
+            // gradient, so full quality is spent on detail nobody can see.
+            quality={60}
             className="object-cover opacity-50"
+            // The section already carries bg-brand-black plus the gradient
+            // below, so a missing backdrop should read as the plain dark hero
+            // rather than as a second panel stacked on top.
+            fallback={null}
           />
           <div className="absolute inset-0 bg-gradient-to-br from-brand-black/90 via-brand-black/70 to-brand-red/30" />
         </>

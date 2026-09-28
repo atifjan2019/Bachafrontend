@@ -1,0 +1,455 @@
+"use client";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import {
+  fetchProducts,
+  findCategory,
+  queryKey,
+  type Collection,
+} from "@/lib/products/query";
+import { ProductGrid } from "@/components/product/ProductGrid";
+import { CategoryFilter } from "@/components/filters/CategoryFilter";
+import { PriceRangeSlider } from "@/components/filters/PriceRangeSlider";
+import { SizeFilter } from "@/components/filters/SizeFilter";
+import { SortDropdown } from "@/components/filters/SortDropdown";
+import { MobileFilterSheet } from "@/components/filters/MobileFilterSheet";
+import { Button } from "@/components/ui/button";
+import { SlidersHorizontal, X, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ProductCardSkeleton } from "@/components/common/LoadingSkeleton";
+import { EmptyState } from "@/components/common/EmptyState";
+import { PageHero } from "@/components/common/PageHero";
+import type { Category, Product } from "@/types";
+
+const COLLECTIONS: { key: Collection; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "featured", label: "Featured" },
+  { key: "best_seller", label: "Best Sellers" },
+  { key: "new", label: "New Arrivals" },
+];
+
+export interface ProductsClientProps {
+  /** First page of results, already fetched on the server for this URL. */
+  initialProducts: Product[];
+  initialCategories: Category[];
+  initialTotal: number;
+  initialLastPage: number;
+  /** Identity of the query the server ran, so mount can skip refetching it. */
+  initialKey: string;
+}
+
+function ProductsPageContent({
+  initialProducts,
+  initialCategories,
+  initialTotal,
+  initialLastPage,
+  initialKey,
+}: ProductsClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParam = searchParams.get("search") ?? "";
+
+  // The URL is the single source of truth for the category filter — links in
+  // (category cards, mega menu) and toggles out (checkboxes, chips) both go
+  // through ?category=. Joined into a string first so the memo dependency is a
+  // primitive and the array identity stays stable between renders.
+  const categoryKey = searchParams.getAll("category").join(",");
+  const selectedCats = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          categoryKey
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        )
+      ),
+    [categoryKey]
+  );
+
+  // Seeded from the server render, so the grid paints with the first page of
+  // real products instead of a skeleton waiting on a client fetch.
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState(searchParam);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParam);
+  const [collection, setCollection] = useState<Collection>("all");
+  const [price, setPrice] = useState<[number, number]>([0, 15000]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [sort, setSort] = useState<"newest" | "price_asc" | "price_desc">("newest");
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(initialLastPage);
+  const [total, setTotal] = useState(initialTotal);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Which query the products in state belong to. Starts as the server's, so the
+  // fetch effect below no-ops on mount; every later filter change writes its own
+  // key after loading. Also makes the effect idempotent under StrictMode's
+  // double-invoke in development.
+  const loadedKey = useRef(initialKey);
+
+  // Write the selection back to ?category= so the URL always matches what is
+  // ticked — shareable, refresh-safe, and no stale param after toggling. replace
+  // (not push) keeps every checkbox click out of the back-button history.
+  const setSelectedCats = useCallback(
+    (next: string[]) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("category");
+      next.forEach((slug) => params.append("category", slug));
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [router, pathname, searchParams]
+  );
+
+  // Drive the search box from the ?search= URL param (header search overlay).
+  useEffect(() => {
+    setSearch(searchParam);
+    setDebouncedSearch(searchParam);
+  }, [searchParam]);
+
+  // Debounce the search box so we don't fire a request on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Reset to the first page whenever a server-side filter changes so we don't
+  // request a page number that no longer exists. Price/sort/size are client-side
+  // and don't affect the fetched page, so they're intentionally excluded.
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCats, debouncedSearch, collection]);
+
+  // Ticking a category rewrites ?category=, which re-runs the server component —
+  // so the new result set arrives as props before the fetch effect below gets a
+  // chance to request it. Adopt it and mark it loaded, otherwise every filter
+  // click costs one server fetch *and* one client fetch for the same rows.
+  //
+  // Guarded on the keys matching: collection tabs and pagination are client-only
+  // state the server doesn't know about, so when the visitor is on, say, "Best
+  // Sellers", the server's "All" result is for a different query and must not be
+  // swapped in. Declared before the fetch effect so it wins on the same commit.
+  useEffect(() => {
+    const key = queryKey({ selectedCats, search: debouncedSearch, collection, page });
+    if (initialKey !== key || loadedKey.current === key) return;
+    setProducts(initialProducts);
+    setTotal(initialTotal);
+    setLastPage(initialLastPage);
+    loadedKey.current = key;
+    setLoading(false);
+  }, [
+    initialKey,
+    initialProducts,
+    initialTotal,
+    initialLastPage,
+    selectedCats,
+    debouncedSearch,
+    collection,
+    page,
+  ]);
+
+  useEffect(() => {
+    // Price, size and sort are applied client-side (the backend ignores them),
+    // so they are NOT part of the key — changing them must not trigger a
+    // round-trip. Matching key means the products in state are already the
+    // answer to this query, which is how the server-rendered first page avoids
+    // being refetched the moment it hydrates.
+    const key = queryKey({ selectedCats, search: debouncedSearch, collection, page });
+    if (loadedKey.current === key) return;
+
+    let mounted = true;
+    setLoading(true);
+    (async () => {
+      try {
+        const res = await fetchProducts({
+          selectedCats,
+          search: debouncedSearch,
+          collection,
+          page,
+        });
+        if (mounted) {
+          setProducts(res.products);
+          setLastPage(res.lastPage);
+          setTotal(res.total);
+          loadedKey.current = key;
+        }
+      } catch (e) {
+        console.error("Failed to load products:", e);
+        if (mounted) setProducts([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+    // `categories` is deliberately not a dependency any more: the API expands a
+    // parent slug to its subtree itself, so the tree no longer feeds the query
+    // and its arrival must not retrigger a fetch.
+  }, [selectedCats, page, debouncedSearch, collection]);
+
+  const filters = useMemo(
+    () => (
+      <div className="space-y-6">
+        <div>
+          <h4 className="font-display text-base mb-3">Category</h4>
+          <CategoryFilter categories={categories} value={selectedCats} onChange={setSelectedCats} />
+        </div>
+        <div>
+          <h4 className="font-display text-base mb-3">Size</h4>
+          <SizeFilter value={selectedSizes} onChange={setSelectedSizes} />
+        </div>
+        <div>
+          <h4 className="font-display text-base mb-3">Price Range</h4>
+          <PriceRangeSlider value={price} onChange={setPrice} />
+        </div>
+      </div>
+    ),
+    [categories, selectedCats, setSelectedCats, selectedSizes, price]
+  );
+
+  // Size, price and sort are all applied client-side over the loaded set (the
+  // backend supports none of them), so adjusting them re-filters instantly with
+  // no network request.
+  const visibleProducts = useMemo(() => {
+    let list = products;
+
+    if (selectedSizes.length > 0) {
+      list = list.filter((p) => p.variants.some((v) => selectedSizes.includes(v.size)));
+    }
+
+    list = list.filter((p) => {
+      const pr = p.sale_price ?? p.price;
+      return pr >= price[0] && pr <= price[1];
+    });
+
+    if (sort === "price_asc") {
+      list = [...list].sort((a, b) => (a.sale_price ?? a.price) - (b.sale_price ?? b.price));
+    } else if (sort === "price_desc") {
+      list = [...list].sort((a, b) => (b.sale_price ?? b.price) - (a.sale_price ?? a.price));
+    }
+
+    return list;
+  }, [products, selectedSizes, price, sort]);
+
+  // Categories don't have their own pages — arriving from a category card just
+  // pre-selects the filter here, so a single-category selection takes over the
+  // hero to keep that "dedicated collection" feel.
+  const activeCategory =
+    selectedCats.length === 1 ? findCategory(categories, selectedCats[0]) : undefined;
+
+  const activeFilterCount =
+    selectedCats.length +
+    selectedSizes.length +
+    (price[0] > 0 || price[1] < 15000 ? 1 : 0);
+
+  return (
+    <div className="flex flex-col">
+      {/* Hero */}
+      <PageHero
+        eyebrow={activeCategory ? "Shop by category" : "Shop"}
+        title={activeCategory?.name ?? "All Products"}
+        subtitle={
+          activeCategory
+            ? `${total} ${total === 1 ? "piece" : "pieces"} curated for ${activeCategory.name.toLowerCase()}`
+            : `${total} ${total === 1 ? "piece" : "pieces"} stitched with care`
+        }
+        image={activeCategory?.image || undefined}
+        variant="dark"
+        align="center"
+      />
+
+      {/* Toolbar */}
+      <div className="sticky top-14 z-30 bg-white border-b border-ink-10">
+        <div className="container-shop py-3 space-y-3">
+          {/* Row: search + sort + mobile filter */}
+          <div className="flex items-center gap-3">
+            <button
+              className="lg:hidden inline-flex items-center gap-2 text-sm text-brand-black hover:text-ink-70 transition shrink-0"
+              onClick={() => setMobileOpen(true)}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="sr-only sm:not-sr-only">Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="h-5 min-w-5 px-1 rounded-full bg-brand-black text-white text-[10px] flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+            <div className="relative flex-1 max-w-xl">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-30" />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search products…"
+                aria-label="Search products"
+                className="w-full border border-ink-10 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-brand-black"
+              />
+            </div>
+            <SortDropdown value={sort} onChange={setSort} />
+          </div>
+
+          {/* Row: collection tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-0.5">
+            {COLLECTIONS.map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setCollection(c.key)}
+                className={`whitespace-nowrap border px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] transition-colors ${
+                  collection === c.key
+                    ? "border-brand-black bg-brand-black text-white"
+                    : "border-ink-10 bg-white text-ink-70 hover:border-brand-black"
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="hidden lg:flex items-center justify-between gap-3">
+            {/* Active filter chips (desktop) */}
+            <div className="flex flex-wrap items-center gap-2">
+              {selectedCats.map((slug) => {
+                // Search the whole tree — a child category chip should show its
+                // name, not the raw slug.
+                const cat = findCategory(categories, slug);
+                return (
+                  <button
+                    key={slug}
+                    onClick={() => setSelectedCats(selectedCats.filter((s) => s !== slug))}
+                    className="inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition"
+                  >
+                    {cat?.name ?? slug}
+                    <X className="h-3 w-3" />
+                  </button>
+                );
+              })}
+              {selectedSizes.map((sz) => (
+                <button
+                  key={sz}
+                  onClick={() => setSelectedSizes((v) => v.filter((s) => s !== sz))}
+                  className="inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition"
+                >
+                  Size {sz}
+                  <X className="h-3 w-3" />
+                </button>
+              ))}
+              {(price[0] > 0 || price[1] < 15000) && (
+                <button
+                  onClick={() => setPrice([0, 15000])}
+                  className="inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition"
+                >
+                  Rs. {price[0].toLocaleString()} – Rs. {price[1].toLocaleString()}
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={() => {
+                    setSelectedCats([]);
+                    setSelectedSizes([]);
+                    setPrice([0, 15000]);
+                  }}
+                  className="text-xs text-ink-50 hover:text-brand-black underline transition"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="container-shop py-8 lg:py-12">
+        <div className="flex gap-6 lg:gap-10">
+          {/* Sidebar filters (desktop) */}
+          <aside className="hidden lg:block w-56 xl:w-60 flex-shrink-0">
+            <div className="sticky top-32 space-y-0">
+              <div className="border-b border-ink-10 pb-6 mb-6">
+                <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Category</h4>
+                <CategoryFilter categories={categories} value={selectedCats} onChange={setSelectedCats} />
+              </div>
+              <div className="border-b border-ink-10 pb-6 mb-6">
+                <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Size</h4>
+                <SizeFilter value={selectedSizes} onChange={setSelectedSizes} />
+              </div>
+              <div>
+                <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Price range</h4>
+                <PriceRangeSlider value={price} onChange={setPrice} />
+              </div>
+            </div>
+          </aside>
+
+          {/* Products */}
+          <div className="flex-1 min-w-0">
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : visibleProducts.length === 0 ? (
+              <EmptyState
+                title="Nothing matches yet"
+                description="Try clearing a filter or two. New pieces are added regularly."
+                ctaLabel="Clear filters"
+                ctaHref="/products"
+              />
+            ) : (
+              <>
+                <ProductGrid products={visibleProducts} />
+                {lastPage > 1 && (
+                  <div className="mt-12 flex items-center justify-center gap-3">
+                    <button
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className="h-10 w-10 rounded-full border border-ink-10 flex items-center justify-center text-brand-black hover:bg-surface-soft disabled:opacity-30 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="text-sm text-ink-50">
+                      Page {page} of {lastPage}
+                    </span>
+                    <button
+                      disabled={page >= lastPage}
+                      onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                      className="h-10 w-10 rounded-full border border-ink-10 flex items-center justify-center text-brand-black hover:bg-surface-soft disabled:opacity-30 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <MobileFilterSheet
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        onClear={() => {
+          setSelectedCats([]);
+          setSelectedSizes([]);
+          setPrice([0, 15000]);
+        }}
+      >
+        {filters}
+      </MobileFilterSheet>
+    </div>
+  );
+}
+
+export default function ProductsClient(props: ProductsClientProps) {
+  // useSearchParams requires a Suspense boundary in the app router.
+  return (
+    <Suspense fallback={null}>
+      <ProductsPageContent {...props} />
+    </Suspense>
+  );
+}

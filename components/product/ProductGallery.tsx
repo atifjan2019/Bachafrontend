@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -43,9 +43,10 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
         }}
       >
         {active && (
-          <Image
+          <SafeImage
             src={active.url}
             alt={active.alt ?? name}
+            fallbackLabel={name}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover"
@@ -91,7 +92,14 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
                 i === index ? "border-brand-black" : "border-border hover:border-ink-30"
               )}
             >
-              <Image src={img.url} alt={img.alt ?? name} fill className="object-cover" sizes="80px" />
+              <SafeImage
+                src={img.url}
+                alt={img.alt ?? name}
+                fallbackLabel={name}
+                fill
+                className="object-cover"
+                sizes="80px"
+              />
             </button>
           ))}
         </div>

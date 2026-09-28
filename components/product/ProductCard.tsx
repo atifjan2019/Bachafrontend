@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import { formatPKR } from "@/lib/utils/format";
 import type { Product } from "@/types";
 import { ArrowUpRight } from "lucide-react";
@@ -18,15 +18,23 @@ export function ProductCard({
     : 0;
 
   return (
-    <Link href={`/products/${product.slug}`} className="group relative block">
+    // prefetch={false}: the grid renders dozens of these, and Next was
+    // prefetching a route payload for every card that scrolled into view —
+    // 59 RSC requests for 29 products in a captured session, each one an
+    // uncached dynamic render on the origin. The detail route is dynamic, so
+    // the prefetch buys little; navigation still shows loading.tsx instantly.
+    <Link href={`/products/${product.slug}`} prefetch={false} className="group relative block">
       {/* Image */}
       <div className="relative aspect-[4/5] bg-surface-sunken overflow-hidden">
-        <Image
-          src={product.images[0]?.url ?? "/images/placeholder.svg"}
+        <SafeImage
+          src={product.images[0]?.url}
           alt={product.images[0]?.alt ?? product.name}
+          fallbackLabel={product.name}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.06]"
+          // Only `transform` actually animates here; `transition-all` makes the
+          // browser watch every animatable property on every card in the grid.
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
         />
 
         {/* Red overlay on hover */}

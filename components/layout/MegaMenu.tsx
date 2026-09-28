@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react";
 import type { Category } from "@/types";
@@ -64,6 +64,7 @@ export function MegaMenu({
                 >
                   <Link
                     href={`/products?category=${parent.slug}`}
+                    prefetch={false}
                     onClick={onClose}
                     className="flex items-start justify-between gap-2"
                   >
@@ -86,6 +87,7 @@ export function MegaMenu({
                         <li key={child.id}>
                           <Link
                             href={`/products?category=${child.slug}`}
+                            prefetch={false}
                             onClick={onClose}
                             className="block text-[13px] text-ink-70 transition-colors hover:text-brand-red truncate"
                           >
@@ -105,6 +107,7 @@ export function MegaMenu({
                   <Link
                     key={category.id}
                     href={`/products?category=${category.slug}`}
+                    prefetch={false}
                     onClick={onClose}
                     className="border border-ink-10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-70 transition-colors hover:border-brand-red hover:bg-brand-red hover:text-white"
                   >
@@ -118,16 +121,19 @@ export function MegaMenu({
           {/* Right: featured */}
           <Link
             href={`/products?category=${featured.slug}`}
+            prefetch={false}
             onClick={onClose}
             className="group/feat relative hidden md:flex flex-col justify-between overflow-hidden bg-brand-black p-6 text-white min-h-[340px]"
           >
             {featured.image ? (
-              <Image
+              <SafeImage
                 src={featured.image}
                 alt={featured.name}
                 fill
                 sizes="300px"
                 className="absolute inset-0 h-full w-full object-cover opacity-40 transition-all duration-700 group-hover/feat:opacity-60 group-hover/feat:scale-105"
+                // The tile already has its own gradient backdrop below.
+                fallback={null}
               />
             ) : null}
             <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/60 to-brand-black/30" />

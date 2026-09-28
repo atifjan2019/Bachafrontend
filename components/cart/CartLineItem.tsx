@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
@@ -17,7 +17,7 @@ export function CartLineItem({ line, compact = false }: { line: CartLine; compac
         href={`/products/${line.slug}`}
         className="relative h-20 w-16 sm:h-24 sm:w-20 flex-shrink-0 overflow-hidden rounded-md border border-border bg-cream"
       >
-        <Image src={line.image} alt={line.name} fill className="object-cover" sizes="80px" />
+        <SafeImage src={line.image} alt={line.name} fallbackLabel={line.name} fill className="object-cover" sizes="80px" />
       </Link>
       <div className="flex-1 min-w-0">
         <Link href={`/products/${line.slug}`} className="font-display text-sm text-brand-black line-clamp-1">

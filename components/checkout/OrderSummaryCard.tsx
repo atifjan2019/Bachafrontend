@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import { useCart } from "@/lib/store/cart";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { formatPKR } from "@/lib/utils/format";
@@ -14,7 +14,7 @@ export function OrderSummaryCard() {
         {lines.map((l) => (
           <div key={l.id} className="flex gap-3">
             <div className="relative h-16 w-14 flex-shrink-0 overflow-hidden rounded-md border border-border bg-cream">
-              <Image src={l.image} alt={l.name} fill className="object-cover" sizes="56px" />
+              <SafeImage src={l.image} alt={l.name} fallbackLabel={l.name} fill className="object-cover" sizes="56px" />
               <span className="absolute top-0 right-0 h-5 min-w-5 px-1 rounded-bl-md bg-brand-black text-white text-[10px] flex items-center justify-center">
                 {l.quantity}
               </span>

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPost } from "@/lib/api/blogs";
@@ -96,13 +96,14 @@ export default async function BlogPostPage({
 
         {post.image && (
           <div className="relative mb-16 aspect-[21/9] w-full overflow-hidden bg-surface-sunken shadow-sm">
-            <Image
+            <SafeImage
               src={post.image}
               alt={post.title}
+              fallbackLabel={post.title}
               fill
               priority
               className="object-cover"
-              sizes="100vw"
+              sizes="(max-width: 1320px) 100vw, 1320px"
             />
           </div>
         )}

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { SafeImage } from "@/components/common/SafeImage";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { HeroSlider } from "@/components/home/HeroSlider";
 import { PromoPopup } from "@/components/home/PromoPopup";
@@ -173,6 +173,9 @@ export default async function HomePage() {
               <Link
                 key={c.slug}
                 href={`/products?category=${c.slug}`}
+                // Every tile targets the same /products route; prefetching it
+                // once per category just repeats one dynamic render.
+                prefetch={false}
                 className="group relative block overflow-hidden bg-brand-black shadow-[0_2px_20px_-10px_rgba(20,20,20,0.25)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_35px_60px_-20px_rgba(20,20,20,0.5)]"
               >
                 <div className="relative aspect-[3/4] overflow-hidden">
@@ -543,6 +546,9 @@ export default async function HomePage() {
  * Renders a real catalog image when available, otherwise an elegant
  * branded gradient panel — never a random stock photo. Keeps the brand
  * feeling premium and consistent even before imagery is uploaded.
+ *
+ * SafeImage extends that to sources that exist in the database but 404 on the
+ * CDN, which previously left a bare black tile with alt text showing through.
  */
 function CollectionImage({
   src,
@@ -555,24 +561,16 @@ function CollectionImage({
   sizes: string;
   fallbackLabel: string;
 }) {
-  if (src) {
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={sizes}
-        className="object-cover transition-transform duration-[1300ms] ease-out group-hover:scale-[1.06]"
-      />
-    );
-  }
   return (
-    <div className="absolute inset-0 bg-gradient-to-br from-brand-black via-brand-black-soft to-[#2a1116] transition-transform duration-[1300ms] ease-out group-hover:scale-[1.04]">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(232,29,37,0.22)_0%,transparent_60%)]" />
-      <span className="absolute inset-0 flex items-center justify-center font-display text-[5rem] font-bold leading-none text-white/[0.06] sm:text-[7rem]">
-        {fallbackLabel.charAt(0).toUpperCase()}
-      </span>
-    </div>
+    <SafeImage
+      src={src}
+      alt={alt}
+      fallbackLabel={fallbackLabel}
+      fill
+      sizes={sizes}
+      className="object-cover transition-transform duration-[1300ms] ease-out group-hover:scale-[1.06]"
+      fallbackClassName="transition-transform duration-[1300ms] ease-out group-hover:scale-[1.04]"
+    />
   );
 }
 
