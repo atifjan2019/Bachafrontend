@@ -35,10 +35,24 @@ apiClient.interceptors.response.use(
   }
 );
 
+// The backend sits behind an edge cache that honours neither the s-maxage it
+// sends nor the no-cache request headers above: a bare URL such as /categories
+// can stay pinned to a HIT for hours, so subcategories added in the admin panel
+// never reach the shop. Bucketing the timestamp gives every GET a URL that
+// changes once a minute, which forces a fresh origin hit at the start of each
+// bucket while the edge still absorbs everything after it.
+const GET_FRESHNESS_MS = 60_000;
+
 apiClient.interceptors.request.use((config) => {
   const token = typeof window !== "undefined" ? Cookies.get("bsf_token") : undefined;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  if ((config.method ?? "get").toLowerCase() === "get") {
+    config.params = {
+      ...(config.params ?? {}),
+      _ts: Math.floor(Date.now() / GET_FRESHNESS_MS),
+    };
   }
   return config;
 });
