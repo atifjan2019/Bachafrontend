@@ -17,19 +17,16 @@ function adaptCategory(raw: Record<string, unknown>): Category {
   };
 }
 
-// Short in-memory cache: the layout, homepage and products page all request
-// categories. Deduping + a brief TTL turns those repeat round-trips into one.
-let categoriesCache: { data: Category[]; at: number } | null = null;
+// The layout, homepage and products page all ask for categories while the same
+// page is rendering. Sharing the in-flight request collapses those into one
+// round-trip; nothing is held once it settles, so the next page load re-reads
+// the tree and picks up whatever the admin panel changed.
 let categoriesInflight: Promise<Category[]> | null = null;
-const CATEGORIES_TTL = 0; // Disabled cache to ensure instant updates
 
 export async function getCategories(): Promise<Category[]> {
   if (USE_MOCKS) {
     await delay(60);
     return mockCategories;
-  }
-  if (categoriesCache && Date.now() - categoriesCache.at < CATEGORIES_TTL) {
-    return categoriesCache.data;
   }
   if (categoriesInflight) return categoriesInflight;
 
@@ -41,9 +38,7 @@ export async function getCategories(): Promise<Category[]> {
         : Array.isArray(res.data)
         ? res.data
         : [];
-      const data = raw.map(adaptCategory);
-      categoriesCache = { data, at: Date.now() };
-      return data;
+      return raw.map(adaptCategory);
     })
     .finally(() => {
       categoriesInflight = null;

@@ -66,26 +66,18 @@ export interface Settings {
   footer_about?: string;
 }
 
-// Lightweight in-memory cache. Settings change rarely, so a short TTL safely
-// collapses the many getSettings() calls per render (layout ×2, footer, page)
-// and their client-side callers into a single round-trip, reused across close
-// requests and client navigations.
-let settingsCache: { data: Settings; at: number } | null = null;
+// getSettings() is called several times while one page renders (layout ×2,
+// footer, page). Sharing the in-flight request collapses those into a single
+// round-trip; nothing survives it, so edits made in the admin panel show up on
+// the next page load.
 let settingsInflight: Promise<Settings> | null = null;
-const SETTINGS_TTL = 0; // Disabled cache to ensure instant updates
 
 export async function getSettings(): Promise<Settings> {
-  if (settingsCache && Date.now() - settingsCache.at < SETTINGS_TTL) {
-    return settingsCache.data;
-  }
   if (settingsInflight) return settingsInflight;
 
   settingsInflight = apiClient
     .get<{ data: Settings }>("/settings")
-    .then((res) => {
-      settingsCache = { data: res.data.data, at: Date.now() };
-      return res.data.data;
-    })
+    .then((res) => res.data.data)
     .finally(() => {
       settingsInflight = null;
     });
