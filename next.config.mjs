@@ -2,6 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    // Serve catalogue images straight from the media CDN (media.bachastylo.com, Cloudflare)
+    // instead of through Vercel's image optimizer. The optimizer is metered: once the plan's
+    // quota is used up it answers 402 for every image it has not already cached, so newly
+    // added products showed the fallback panel instead of their photo. The uploads are
+    // already compressed WebP (median ~57 KB, max ~184 KB), so nothing is lost by skipping it.
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },
