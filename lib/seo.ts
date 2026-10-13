@@ -44,6 +44,21 @@ export function isNoindex(value: string | undefined): boolean {
   return (value ?? "").toLowerCase().includes("noindex");
 }
 
+/** Plain text from an HTML fragment, collapsed and trimmed, for meta descriptions. */
+export function stripHtml(html: string | null | undefined, max = 160): string {
+  const text = (html ?? "")
+    .replace(/<[^>]*>?/gm, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&rsquo;|&lsquo;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  return `${cut.slice(0, cut.lastIndexOf(" ") > 80 ? cut.lastIndexOf(" ") : max).trim()}…`;
+}
+
 /** Validate a GA4 measurement ID before it is ever written into a script tag. */
 export function validGaId(value: string | undefined): string | null {
   const v = (value ?? "").trim();

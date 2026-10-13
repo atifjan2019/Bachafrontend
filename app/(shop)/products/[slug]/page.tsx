@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProduct, getRelated } from "@/lib/api/products";
+import { stripHtml } from "@/lib/seo";
 import { getSettings } from "@/lib/api/settings";
 import { resolveWhatsApp } from "@/lib/constants/social";
 import { getReviews } from "@/lib/api/reviews";
@@ -15,6 +17,45 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 // Cache each product page for 5 minutes (ISR) so repeat views are served
 // instantly instead of re-rendering + re-fetching on every request.
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const product = await getProduct(slug);
+    if (!product) return { title: "Product not found", robots: { index: false, follow: false } };
+
+    // Product names already carry the brand suffix, so the layout template is
+    // bypassed rather than doubling it.
+    const title = product.name.trim();
+    const description =
+      stripHtml(product.description) ||
+      `${product.name} from Bacha Stylo. Nationwide delivery, Cash on Delivery, JazzCash and Easypaisa.`;
+    const image = product.images[0]?.url;
+
+    return {
+      title: { absolute: title },
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        images: image ? [{ url: image, alt: product.images[0]?.alt || product.name }] : undefined,
+      },
+      twitter: {
+        card: image ? "summary_large_image" : "summary",
+        title,
+        description,
+        images: image ? [image] : undefined,
+      },
+    };
+  } catch {
+    return {};
+  }
+}
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
