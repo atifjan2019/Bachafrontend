@@ -3,24 +3,28 @@ import Script from "next/script";
 type Props = { gaId: string | null; pixelId: string | null };
 
 /**
- * Third-party tags, rendered once from the root layout. Each loads after the
- * page is interactive so it never competes with first paint. GA4's enhanced
- * measurement handles client-side route changes via history events, so no
- * extra page_view is sent here.
+ * Third-party tags, rendered once from the root layout.
+ *
+ * GA4 is written as plain script elements so the tag is part of the served
+ * HTML head, where Google specifies it. The loader is async, so it does not
+ * block paint, and React hoists and deduplicates async scripts, so there is
+ * exactly one per page. GA4's enhanced measurement reports client-side route
+ * changes via history events, so no extra page_view is sent here.
+ *
+ * The pixel loads after the page is interactive.
  */
 export function Tracking({ gaId, pixelId }: Props) {
   return (
     <>
       {gaId && (
         <>
-          <Script
-            id="ga4-src"
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-            strategy="afterInteractive"
+          <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+          <script
+            id="ga4-init"
+            dangerouslySetInnerHTML={{
+              __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`,
+            }}
           />
-          <Script id="ga4-init" strategy="afterInteractive">
-            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`}
-          </Script>
         </>
       )}
       {pixelId && (

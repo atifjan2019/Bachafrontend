@@ -66,11 +66,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className={montserrat.variable}>
-      <body className="min-h-screen flex flex-col" cz-shortcut-listen="true">
+      <head>
         <Tracking
           gaId={validGaId(settings?.google_analytics_id)}
           pixelId={validPixelId(settings?.facebook_pixel_id)}
         />
+      </head>
+      <body className="min-h-screen flex flex-col" cz-shortcut-listen="true">
         <ToastProvider>
           <AuthHydrator />
           <AbandonedCartTracker />
