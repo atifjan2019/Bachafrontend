@@ -19,6 +19,14 @@ export interface Settings {
   meta_keywords?: string;
   og_image?: string;
   canonical_base_url?: string;
+  /** GA4 measurement ID, e.g. G-XXXXXXXXXX. Empty = no tag rendered. */
+  google_analytics_id?: string;
+  /** Meta Pixel ID. Empty = no pixel rendered. */
+  facebook_pixel_id?: string;
+  /** Bare Search Console verification token (the meta content value only). */
+  google_site_verification?: string;
+  /** Robots directive for the storefront, e.g. "index, follow". */
+  robots_meta?: string;
   home_highlight_title?: string;
   home_highlight_description?: string;
   home_highlight_image?: string;
