@@ -4,6 +4,7 @@ import { CartLineItem } from "@/components/cart/CartLineItem";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { WhatsAppOrderButton } from "@/components/cart/WhatsAppOrderButton";
 import { EmptyCart } from "@/components/cart/EmptyCart";
+import { DeliveryPolicy } from "@/components/cart/DeliveryPolicy";
 import { Button } from "@/components/ui/button";
 import { GoldDivider } from "@/components/common/GoldDivider";
 import { useCart } from "@/lib/store/cart";
@@ -39,6 +40,7 @@ export default function CartPage() {
                 <Link href="/products">Continue Shopping</Link>
               </Button>
             </div>
+            <DeliveryPolicy className="mt-5 rounded-lg" />
           </aside>
         </div>
       )}

@@ -23,6 +23,9 @@ function variants(start: number, colors: { c: string; hex: string }[], stocks: n
         color_hex: color.hex,
         stock: stocks[i % stocks.length],
         sku: `BSF-${start}-${color.c.slice(0, 3).toUpperCase()}-${size}`,
+        price: null,
+        image: null,
+        note: null,
       });
     });
   }
@@ -45,13 +48,16 @@ function figureVariants(start: number, sizes: number[], colors: { c: string; hex
         color_hex: color.hex,
         stock: 8,
         sku: `BSF-${start}-${color.c.slice(0, 3).toUpperCase()}-${size}`,
+        price: null,
+        image: null,
+        note: null,
       });
     });
   }
   return out;
 }
 
-export const mockProducts: Product[] = [
+const base: Omit<Product, "sku" | "meta_title" | "meta_description" | "colors">[] = [
   {
     id: 101,
     slug: "emerald-embroidered-kurta-shalwar",
@@ -441,3 +447,11 @@ export const mockProducts: Product[] = [
     created_at: "2026-04-14",
   },
 ];
+
+export const mockProducts: Product[] = base.map((p) => ({
+  ...p,
+  sku: `BS-${String(p.id).padStart(5, "0")}`,
+  meta_title: null,
+  meta_description: null,
+  colors: [],
+}));

@@ -1,12 +1,15 @@
 "use client";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import {
   fetchProducts,
   findCategory,
   queryKey,
+  parseCollection,
+  parsePage,
+  parseSort,
   type Collection,
+  type Sort,
 } from "@/lib/products/query";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { CategoryFilter } from "@/components/filters/CategoryFilter";
@@ -14,7 +17,6 @@ import { PriceRangeSlider } from "@/components/filters/PriceRangeSlider";
 import { SizeFilter } from "@/components/filters/SizeFilter";
 import { SortDropdown } from "@/components/filters/SortDropdown";
 import { MobileFilterSheet } from "@/components/filters/MobileFilterSheet";
-import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, X, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/common/LoadingSkeleton";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -27,6 +29,9 @@ const COLLECTIONS: { key: Collection; label: string }[] = [
   { key: "best_seller", label: "Best Sellers" },
   { key: "new", label: "New Arrivals" },
 ];
+
+const PRICE_MIN = 0;
+const PRICE_MAX = 15000;
 
 export interface ProductsClientProps {
   /** First page of results, already fetched on the server for this URL. */
@@ -48,38 +53,44 @@ function ProductsPageContent({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const searchParam = searchParams.get("search") ?? "";
 
-  // The URL is the single source of truth for the category filter — links in
-  // (category cards, mega menu) and toggles out (checkboxes, chips) both go
-  // through ?category=. Joined into a string first so the memo dependency is a
-  // primitive and the array identity stays stable between renders.
+  // The URL is the single source of truth for every filter, the collection
+  // tab, the sort and the page number. That is what makes the browser's Back
+  // button land on the same page of the same category with the same filters:
+  // the product page was entered from /products?category=…&page=2, so Back
+  // returns to exactly that URL and the server renders that page again.
+  const searchParam = searchParams.get("search") ?? "";
   const categoryKey = searchParams.getAll("category").join(",");
+  const sizeKey = searchParams.getAll("size").join(",");
+  const page = parsePage(searchParams.get("page"));
+  const collection = parseCollection(searchParams.get("tab"));
+  const sort = parseSort(searchParams.get("sort"));
+  const minParam = Number(searchParams.get("min"));
+  const maxParam = Number(searchParams.get("max"));
+  const price = useMemo<[number, number]>(
+    () => [
+      Number.isFinite(minParam) && searchParams.has("min") ? Math.max(PRICE_MIN, minParam) : PRICE_MIN,
+      Number.isFinite(maxParam) && searchParams.has("max") ? Math.min(PRICE_MAX, maxParam) : PRICE_MAX,
+    ],
+    [minParam, maxParam, searchParams]
+  );
+
   const selectedCats = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          categoryKey
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        )
-      ),
+    () => Array.from(new Set(categoryKey.split(",").map((s) => s.trim()).filter(Boolean))),
     [categoryKey]
+  );
+  const selectedSizes = useMemo(
+    () => Array.from(new Set(sizeKey.split(",").map((s) => s.trim()).filter(Boolean))),
+    [sizeKey]
   );
 
   // Seeded from the server render, so the grid paints with the first page of
   // real products instead of a skeleton waiting on a client fetch.
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [categories] = useState<Category[]>(initialCategories);
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState(searchParam);
   const [debouncedSearch, setDebouncedSearch] = useState(searchParam);
-  const [collection, setCollection] = useState<Collection>("all");
-  const [price, setPrice] = useState<[number, number]>([0, 15000]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [sort, setSort] = useState<"newest" | "price_asc" | "price_desc">("newest");
-  const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(initialLastPage);
   const [total, setTotal] = useState(initialTotal);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -90,18 +101,58 @@ function ProductsPageContent({
   // double-invoke in development.
   const loadedKey = useRef(initialKey);
 
-  // Write the selection back to ?category= so the URL always matches what is
-  // ticked — shareable, refresh-safe, and no stale param after toggling. replace
-  // (not push) keeps every checkbox click out of the back-button history.
-  const setSelectedCats = useCallback(
-    (next: string[]) => {
+  /**
+   * Rewrite the URL with a set of changes. `null` removes a key; an array
+   * writes repeated params. `replace` keeps filter clicks out of the history;
+   * page changes `push` so Back steps through pages the visitor actually saw.
+   */
+  const updateUrl = useCallback(
+    (changes: Record<string, string | string[] | null>, mode: "replace" | "push" = "replace") => {
       const params = new URLSearchParams(searchParams.toString());
-      params.delete("category");
-      next.forEach((slug) => params.append("category", slug));
+      for (const [key, value] of Object.entries(changes)) {
+        params.delete(key);
+        if (value === null) continue;
+        (Array.isArray(value) ? value : [value]).forEach((v) => params.append(key, v));
+      }
       const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      const href = qs ? `${pathname}?${qs}` : pathname;
+      if (mode === "push") router.push(href, { scroll: false });
+      else router.replace(href, { scroll: false });
     },
     [router, pathname, searchParams]
+  );
+
+  // Changing the category resets the page and any size filter, since the
+  // sizes on offer belong to the category being browsed.
+  const setSelectedCats = useCallback(
+    (next: string[]) => updateUrl({ category: next, size: null, page: null }),
+    [updateUrl]
+  );
+  const setSelectedSizes = useCallback((next: string[]) => updateUrl({ size: next }), [updateUrl]);
+  const setPrice = useCallback(
+    (next: [number, number]) =>
+      updateUrl({
+        min: next[0] > PRICE_MIN ? String(next[0]) : null,
+        max: next[1] < PRICE_MAX ? String(next[1]) : null,
+      }),
+    [updateUrl]
+  );
+  const setSort = useCallback((next: Sort) => updateUrl({ sort: next === "newest" ? null : next }), [updateUrl]);
+  const setCollection = useCallback(
+    (next: Collection) => updateUrl({ tab: next === "all" ? null : next, page: null }),
+    [updateUrl]
+  );
+  const gridRef = useRef<HTMLDivElement>(null);
+  const setPage = useCallback(
+    (next: number) => {
+      gridRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      updateUrl({ page: next > 1 ? String(next) : null }, "push");
+    },
+    [updateUrl]
+  );
+  const clearAll = useCallback(
+    () => updateUrl({ category: null, size: null, min: null, max: null, page: null }),
+    [updateUrl]
   );
 
   // Drive the search box from the ?search= URL param (header search overlay).
@@ -116,22 +167,16 @@ function ProductsPageContent({
     return () => clearTimeout(t);
   }, [search]);
 
-  // Reset to the first page whenever a server-side filter changes so we don't
-  // request a page number that no longer exists. Price/sort/size are client-side
-  // and don't affect the fetched page, so they're intentionally excluded.
+  // Typing a new search starts again from page 1.
   useEffect(() => {
-    setPage(1);
-  }, [selectedCats, debouncedSearch, collection]);
+    if (debouncedSearch !== searchParam && page !== 1) updateUrl({ page: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
 
-  // Ticking a category rewrites ?category=, which re-runs the server component —
-  // so the new result set arrives as props before the fetch effect below gets a
-  // chance to request it. Adopt it and mark it loaded, otherwise every filter
+  // Ticking a filter rewrites the URL, which re-runs the server component —
+  // so the new result set arrives as props before the fetch effect below gets
+  // a chance to request it. Adopt it and mark it loaded, otherwise every filter
   // click costs one server fetch *and* one client fetch for the same rows.
-  //
-  // Guarded on the keys matching: collection tabs and pagination are client-only
-  // state the server doesn't know about, so when the visitor is on, say, "Best
-  // Sellers", the server's "All" result is for a different query and must not be
-  // swapped in. Declared before the fetch effect so it wins on the same commit.
   useEffect(() => {
     const key = queryKey({ selectedCats, search: debouncedSearch, collection, page });
     if (initialKey !== key || loadedKey.current === key) return;
@@ -140,16 +185,7 @@ function ProductsPageContent({
     setLastPage(initialLastPage);
     loadedKey.current = key;
     setLoading(false);
-  }, [
-    initialKey,
-    initialProducts,
-    initialTotal,
-    initialLastPage,
-    selectedCats,
-    debouncedSearch,
-    collection,
-    page,
-  ]);
+  }, [initialKey, initialProducts, initialTotal, initialLastPage, selectedCats, debouncedSearch, collection, page]);
 
   useEffect(() => {
     // Price, size and sort are applied client-side (the backend ignores them),
@@ -164,12 +200,7 @@ function ProductsPageContent({
     setLoading(true);
     (async () => {
       try {
-        const res = await fetchProducts({
-          selectedCats,
-          search: debouncedSearch,
-          collection,
-          page,
-        });
+        const res = await fetchProducts({ selectedCats, search: debouncedSearch, collection, page });
         if (mounted) {
           setProducts(res.products);
           setLastPage(res.lastPage);
@@ -186,10 +217,19 @@ function ProductsPageContent({
     return () => {
       mounted = false;
     };
-    // `categories` is deliberately not a dependency any more: the API expands a
-    // parent slug to its subtree itself, so the tree no longer feeds the query
-    // and its arrival must not retrigger a fetch.
   }, [selectedCats, page, debouncedSearch, collection]);
+
+  // The size filter offers only the sizes carried by the products on screen,
+  // so a shoe category shows shoe sizes and a cap category shows no size
+  // filter at all. "One Size" is the placeholder for products without sizes.
+  const sizeOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) for (const v of p.variants) if (v.size && v.size !== "One Size") set.add(v.size);
+    return Array.from(set);
+  }, [products]);
+  const activeSizes = useMemo(() => selectedSizes.filter((s) => sizeOptions.includes(s)), [selectedSizes, sizeOptions]);
+
+  const priceActive = price[0] > PRICE_MIN || price[1] < PRICE_MAX;
 
   const filters = useMemo(
     () => (
@@ -198,17 +238,19 @@ function ProductsPageContent({
           <h4 className="font-display text-base mb-3">Category</h4>
           <CategoryFilter categories={categories} value={selectedCats} onChange={setSelectedCats} />
         </div>
-        <div>
-          <h4 className="font-display text-base mb-3">Size</h4>
-          <SizeFilter value={selectedSizes} onChange={setSelectedSizes} />
-        </div>
+        {sizeOptions.length > 0 && (
+          <div>
+            <h4 className="font-display text-base mb-3">Size</h4>
+            <SizeFilter options={sizeOptions} value={activeSizes} onChange={setSelectedSizes} />
+          </div>
+        )}
         <div>
           <h4 className="font-display text-base mb-3">Price Range</h4>
           <PriceRangeSlider value={price} onChange={setPrice} />
         </div>
       </div>
     ),
-    [categories, selectedCats, setSelectedCats, selectedSizes, price]
+    [categories, selectedCats, setSelectedCats, sizeOptions, activeSizes, setSelectedSizes, price, setPrice]
   );
 
   // Size, price and sort are all applied client-side over the loaded set (the
@@ -217,8 +259,8 @@ function ProductsPageContent({
   const visibleProducts = useMemo(() => {
     let list = products;
 
-    if (selectedSizes.length > 0) {
-      list = list.filter((p) => p.variants.some((v) => selectedSizes.includes(v.size)));
+    if (activeSizes.length > 0) {
+      list = list.filter((p) => p.variants.some((v) => activeSizes.includes(v.size)));
     }
 
     list = list.filter((p) => {
@@ -233,18 +275,17 @@ function ProductsPageContent({
     }
 
     return list;
-  }, [products, selectedSizes, price, sort]);
+  }, [products, activeSizes, price, sort]);
 
   // Categories don't have their own pages — arriving from a category card just
   // pre-selects the filter here, so a single-category selection takes over the
   // hero to keep that "dedicated collection" feel.
-  const activeCategory =
-    selectedCats.length === 1 ? findCategory(categories, selectedCats[0]) : undefined;
+  const activeCategory = selectedCats.length === 1 ? findCategory(categories, selectedCats[0]) : undefined;
 
-  const activeFilterCount =
-    selectedCats.length +
-    selectedSizes.length +
-    (price[0] > 0 || price[1] < 15000 ? 1 : 0);
+  const activeFilterCount = selectedCats.length + activeSizes.length + (priceActive ? 1 : 0);
+
+  const chipClass =
+    "inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition";
 
   return (
     <div className="flex flex-col">
@@ -318,44 +359,26 @@ function ProductsPageContent({
                 // name, not the raw slug.
                 const cat = findCategory(categories, slug);
                 return (
-                  <button
-                    key={slug}
-                    onClick={() => setSelectedCats(selectedCats.filter((s) => s !== slug))}
-                    className="inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition"
-                  >
+                  <button key={slug} onClick={() => setSelectedCats(selectedCats.filter((s) => s !== slug))} className={chipClass}>
                     {cat?.name ?? slug}
                     <X className="h-3 w-3" />
                   </button>
                 );
               })}
-              {selectedSizes.map((sz) => (
-                <button
-                  key={sz}
-                  onClick={() => setSelectedSizes((v) => v.filter((s) => s !== sz))}
-                  className="inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition"
-                >
+              {activeSizes.map((sz) => (
+                <button key={sz} onClick={() => setSelectedSizes(activeSizes.filter((s) => s !== sz))} className={chipClass}>
                   Size {sz}
                   <X className="h-3 w-3" />
                 </button>
               ))}
-              {(price[0] > 0 || price[1] < 15000) && (
-                <button
-                  onClick={() => setPrice([0, 15000])}
-                  className="inline-flex items-center gap-1 rounded-full border border-ink-10 bg-surface-soft px-3 py-1 text-xs text-brand-black hover:border-ink-30 transition"
-                >
+              {priceActive && (
+                <button onClick={() => setPrice([PRICE_MIN, PRICE_MAX])} className={chipClass}>
                   Rs. {price[0].toLocaleString()} – Rs. {price[1].toLocaleString()}
                   <X className="h-3 w-3" />
                 </button>
               )}
               {activeFilterCount > 0 && (
-                <button
-                  onClick={() => {
-                    setSelectedCats([]);
-                    setSelectedSizes([]);
-                    setPrice([0, 15000]);
-                  }}
-                  className="text-xs text-ink-50 hover:text-brand-black underline transition"
-                >
+                <button onClick={clearAll} className="text-xs text-ink-50 hover:text-brand-black underline transition">
                   Clear all
                 </button>
               )}
@@ -365,7 +388,7 @@ function ProductsPageContent({
       </div>
 
       {/* Main content */}
-      <div className="container-shop py-8 lg:py-12">
+      <div ref={gridRef} className="container-shop py-8 lg:py-12 scroll-mt-32">
         <div className="flex gap-6 lg:gap-10">
           {/* Sidebar filters (desktop) */}
           <aside className="hidden lg:block w-56 xl:w-60 flex-shrink-0">
@@ -374,10 +397,12 @@ function ProductsPageContent({
                 <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Category</h4>
                 <CategoryFilter categories={categories} value={selectedCats} onChange={setSelectedCats} />
               </div>
-              <div className="border-b border-ink-10 pb-6 mb-6">
-                <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Size</h4>
-                <SizeFilter value={selectedSizes} onChange={setSelectedSizes} />
-              </div>
+              {sizeOptions.length > 0 && (
+                <div className="border-b border-ink-10 pb-6 mb-6">
+                  <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Size</h4>
+                  <SizeFilter options={sizeOptions} value={activeSizes} onChange={setSelectedSizes} />
+                </div>
+              )}
               <div>
                 <h4 className="text-xs uppercase tracking-[0.18em] text-ink-50 font-medium mb-4">Price range</h4>
                 <PriceRangeSlider value={price} onChange={setPrice} />
@@ -407,7 +432,8 @@ function ProductsPageContent({
                   <div className="mt-12 flex items-center justify-center gap-3">
                     <button
                       disabled={page <= 1}
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      onClick={() => setPage(Math.max(1, page - 1))}
+                      aria-label="Previous page"
                       className="h-10 w-10 rounded-full border border-ink-10 flex items-center justify-center text-brand-black hover:bg-surface-soft disabled:opacity-30 disabled:cursor-not-allowed transition"
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -417,7 +443,8 @@ function ProductsPageContent({
                     </span>
                     <button
                       disabled={page >= lastPage}
-                      onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                      onClick={() => setPage(Math.min(lastPage, page + 1))}
+                      aria-label="Next page"
                       className="h-10 w-10 rounded-full border border-ink-10 flex items-center justify-center text-brand-black hover:bg-surface-soft disabled:opacity-30 disabled:cursor-not-allowed transition"
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -430,15 +457,7 @@ function ProductsPageContent({
         </div>
       </div>
 
-      <MobileFilterSheet
-        open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
-        onClear={() => {
-          setSelectedCats([]);
-          setSelectedSizes([]);
-          setPrice([0, 15000]);
-        }}
-      >
+      <MobileFilterSheet open={mobileOpen} onClose={() => setMobileOpen(false)} onClear={clearAll}>
         {filters}
       </MobileFilterSheet>
     </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getCategories } from "@/lib/api/categories";
-import { fetchProducts, parseCategoryParam, queryKey } from "@/lib/products/query";
+import { fetchProducts, parseCategoryParam, parseCollection, parsePage, queryKey } from "@/lib/products/query";
 import ProductsClient from "./ProductsClient";
 import type { Category } from "@/types";
 
@@ -75,10 +75,10 @@ export default async function ProductsPage({
   const selectedCats = parseCategoryParam(sp.category);
   const search = typeof sp.search === "string" ? sp.search : "";
 
-  // Collection tabs and pagination are client state, so a fresh navigation
-  // always starts on the "All" tab at page 1 — exactly the query the client
-  // would otherwise have fired on mount.
-  const query = { selectedCats, search, collection: "all" as const, page: 1 };
+  // The page number and collection tab live in the URL, so coming back from a
+  // product lands on the same page of the same tab with its products already
+  // in the HTML (which is also what lets the browser restore the scroll).
+  const query = { selectedCats, search, collection: parseCollection(sp.tab), page: parsePage(sp.page) };
 
   // A backend hiccup should degrade to the old client-fetch behaviour rather
   // than 500 the whole shop.

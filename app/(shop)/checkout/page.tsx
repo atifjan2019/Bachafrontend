@@ -20,6 +20,7 @@ import { uploadReceipt } from "@/lib/api/upload";
 import { captureAbandonedCart } from "@/lib/api/abandonedCart";
 import { availablePaymentMethods } from "@/components/checkout/paymentDetails";
 import { EmptyCart } from "@/components/cart/EmptyCart";
+import { DeliveryPolicy } from "@/components/cart/DeliveryPolicy";
 import { useToast } from "@/components/ui/toast";
 
 const PROVINCES = ["Sindh", "Punjab", "Islamabad Capital Territory", "Khyber Pakhtunkhwa", "Balochistan", "Azad Kashmir", "Gilgit-Baltistan"];
@@ -124,6 +125,11 @@ export default function CheckoutPage() {
           unit_price: l.unit_price,
           name: l.name,
           size: l.size,
+          color: l.color,
+          slug: l.slug,
+          image: l.image,
+          sku: l.sku,
+          variant_sku: l.variant_sku,
         })),
         payment_method: values.payment_method,
         payment_receipt: receiptUrl,
@@ -267,6 +273,7 @@ export default function CheckoutPage() {
 
         <div className="sticky top-24 space-y-4">
           <OrderSummaryCard />
+          <DeliveryPolicy />
           <div className="lg:hidden">
             <Button type="submit" size="lg" className="w-full h-12 text-xs font-bold uppercase tracking-widest" disabled={submitting}>
               {submitting ? "Processing..." : "Place Order"}

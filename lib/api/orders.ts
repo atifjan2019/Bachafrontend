@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import { getSettings } from "./settings";
+import { shippingFor } from "@/lib/shipping";
 import type { CheckoutPayload, Order, OrderStatus } from "@/types";
 
 const newOrderId = () => "BSF-" + Math.floor(100000 + Math.random() * 900000).toString();
@@ -30,6 +31,8 @@ function mapBackendOrder(d: any): Order {
       name: item.name,
       slug: item.slug || "",
       image: item.image || "",
+      sku: item.sku || "",
+      variant_sku: item.variant_sku || "",
       size: item.size || "",
       color: item.color || "",
       quantity: Number(item.quantity),
@@ -49,12 +52,10 @@ function mapBackendOrder(d: any): Order {
 }
 
 export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
-  const settings = await getSettings();
-  const baseFee = Number(settings.shipping_fee ?? 250);
-  const threshold = Number(settings.free_shipping_threshold ?? 5000);
+  const settings = await getSettings().catch(() => ({}));
 
   const subtotal = payload.items.reduce((s, i) => s + i.unit_price * i.quantity, 0);
-  const shipping_fee = subtotal >= threshold ? 0 : baseFee;
+  const shipping_fee = shippingFor(subtotal, settings);
   const total_amount = subtotal + shipping_fee;
 
   const PAYMENT_LABELS: Record<string, string> = {
@@ -71,11 +72,19 @@ export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
     shipping_address: payload.shipping_address.full_address,
     city: payload.shipping_address.city,
     country: "Pakistan",
+    // The exact item as chosen: product id and codes, photo and colour, so
+    // the admin can tell apart similar products even if they are edited later.
     items: payload.items.map((i) => ({
+      product_id: i.product_id || undefined,
       name: i.name,
       price: i.unit_price,
       quantity: i.quantity,
       size: i.size,
+      color: i.color && i.color.toLowerCase() !== "default" ? i.color : undefined,
+      slug: i.slug || undefined,
+      image: i.image || undefined,
+      sku: i.sku || undefined,
+      variant_sku: i.variant_sku || undefined,
     })),
     subtotal,
     shipping_fee,
@@ -102,10 +111,12 @@ export async function placeOrder(payload: CheckoutPayload): Promise<Order> {
     items: payload.items.map((i) => ({
       product_id: i.product_id,
       name: i.name,
-      slug: "",
-      image: "",
+      slug: i.slug ?? "",
+      image: i.image ?? "",
+      sku: i.sku ?? "",
+      variant_sku: i.variant_sku ?? "",
       size: i.size,
-      color: "",
+      color: i.color ?? "",
       quantity: i.quantity,
       unit_price: i.unit_price,
       line_total: i.unit_price * i.quantity,

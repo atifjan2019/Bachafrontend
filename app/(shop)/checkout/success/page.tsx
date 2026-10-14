@@ -10,6 +10,7 @@ import { formatPKR } from "@/lib/utils/format";
 import { CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/common/LoadingSkeleton";
+import { SafeImage } from "@/components/common/SafeImage";
 import type { Order } from "@/types";
 
 export default function SuccessPage() {
@@ -99,10 +100,17 @@ function SuccessInner() {
               <div className="space-y-5 mb-8">
                 {order.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between gap-4">
+                    {item.image && (
+                      <div className="relative h-16 w-14 flex-shrink-0 overflow-hidden rounded-md border border-ink-10 bg-cream">
+                        <SafeImage src={item.image} alt={item.name} fallbackLabel={item.name} fill className="object-cover" sizes="56px" />
+                      </div>
+                    )}
                     <div className="flex-1">
                       <p className="text-sm lg:text-base font-bold text-brand-black">{item.name}</p>
                       <p className="text-[10px] lg:text-[11px] text-ink-30 uppercase tracking-widest mt-0.5">
                         Qty {item.quantity} {item.size && <>&middot; Size {item.size}</>}
+                        {item.color && item.color.toLowerCase() !== "default" && <> &middot; {item.color}</>}
+                        {(item.variant_sku || item.sku) && <> &middot; Code {item.variant_sku || item.sku}</>}
                       </p>
                     </div>
                     <p className="text-sm lg:text-base font-bold text-brand-black">{formatPKR(item.line_total)}</p>

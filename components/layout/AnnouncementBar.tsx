@@ -1,10 +1,19 @@
 "use client";
 import { Truck, CreditCard, Sparkles, Zap } from "lucide-react";
 
-export function AnnouncementBar({ threshold }: { threshold?: string | number }) {
+export function AnnouncementBar({
+  threshold,
+  freeShipping = true,
+}: {
+  threshold?: string | number;
+  /** False when the admin has switched the free-shipping offer off. */
+  freeShipping?: boolean;
+}) {
   const formattedThreshold = threshold ? Number(threshold).toLocaleString() : "5,000";
   const items = [
-    { icon: Truck, text: `Free shipping on orders over Rs. ${formattedThreshold}` },
+    freeShipping
+      ? { icon: Truck, text: `Free shipping on orders of Rs. ${formattedThreshold} or more` }
+      : { icon: Truck, text: "Nationwide delivery across Pakistan" },
     { icon: Zap, text: "Nationwide delivery in 2–5 working days" },
     { icon: CreditCard, text: "Cash on Delivery · JazzCash · Easypaisa" },
     { icon: Sparkles, text: "New drops every Thursday" },

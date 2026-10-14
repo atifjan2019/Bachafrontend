@@ -38,6 +38,7 @@ export function buildWhatsAppOrderHref(opts: {
       .join(" | ");
 
     parts.push(`${i + 1}. ${line.name}`);
+    if (line.variant_sku || line.sku) parts.push(`   Code: ${line.variant_sku || line.sku}`);
     if (attrs) parts.push(`   ${attrs}`);
     parts.push(
       `   ${line.quantity} × ${formatPKR(line.unit_price)} = ${formatPKR(

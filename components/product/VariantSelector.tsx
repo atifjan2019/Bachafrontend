@@ -121,7 +121,7 @@ export function ColorSelector({
   value,
   onChange,
 }: {
-  colors: { color: string; color_hex: string }[];
+  colors: { color: string; color_hex: string; in_stock?: boolean }[];
   value: string | null;
   onChange: (c: string) => void;
 }) {
@@ -129,19 +129,24 @@ export function ColorSelector({
     <div className="flex flex-wrap items-center gap-3">
       {colors.map((c) => {
         const active = c.color === value;
+        const soldOut = c.in_stock === false;
         return (
           <button
             key={c.color}
             type="button"
-            aria-label={c.color}
-            title={c.color}
+            aria-label={soldOut ? `${c.color} (sold out)` : c.color}
+            aria-pressed={active}
+            title={soldOut ? `${c.color} (sold out)` : c.color}
             onClick={() => onChange(c.color)}
             className={cn(
               "relative h-9 w-9 rounded-full border transition",
-              active ? "border-brand-black ring-2 ring-offset-2 ring-brand-black/70" : "border-border"
+              active ? "border-brand-black ring-2 ring-offset-2 ring-brand-black/70" : "border-border",
+              soldOut && "opacity-40"
             )}
             style={{ backgroundColor: c.color_hex }}
-          />
+          >
+            {soldOut && <span aria-hidden className="absolute inset-0 m-auto h-px w-full rotate-45 bg-brand-black/70" />}
+          </button>
         );
       })}
       {value && <span className="text-xs text-muted">{value}</span>}
@@ -155,11 +160,14 @@ export function uniqueSizes(variants: Variant[]) {
 
 export function uniqueColors(variants: Variant[]) {
   const seen = new Set<string>();
-  const out: { color: string; color_hex: string }[] = [];
+  const out: { color: string; color_hex: string; in_stock: boolean }[] = [];
   for (const v of variants) {
     if (!seen.has(v.color)) {
       seen.add(v.color);
-      out.push({ color: v.color, color_hex: v.color_hex });
+      out.push({ color: v.color, color_hex: v.color_hex, in_stock: v.stock > 0 });
+    } else if (v.stock > 0) {
+      const entry = out.find((c) => c.color === v.color);
+      if (entry) entry.in_stock = true;
     }
   }
   return out;

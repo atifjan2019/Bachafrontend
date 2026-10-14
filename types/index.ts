@@ -13,7 +13,23 @@ export type Variant = {
   color: string;
   color_hex: string;
   stock: number;
+  /** Variant code, e.g. BS-00042-MAROON-38. */
   sku: string;
+  /** Colour-specific price, or null to use the product price. */
+  price: number | null;
+  /** Colour-specific photo, or null to use the gallery. */
+  image: string | null;
+  /** Short quality note for the colour, e.g. "Premium wool". */
+  note: string | null;
+};
+
+export type ProductColor = {
+  name: string;
+  hex: string | null;
+  image: string | null;
+  price: number | null;
+  stock: number | null;
+  note: string | null;
 };
 
 export type ProductImage = {
@@ -25,8 +41,14 @@ export type ProductImage = {
 export type Product = {
   id: number;
   slug: string;
+  /** Product code, e.g. BS-00042. */
+  sku: string;
   name: string;
   description: string;
+  meta_title: string | null;
+  meta_description: string | null;
+  /** Admin-defined colour options; empty for single-colour products. */
+  colors: ProductColor[];
   price: number;
   sale_price: number | null;
   category: { id: number; slug: string; name: string };
@@ -89,6 +111,9 @@ export type CartLine = {
   id: string;
   product_id: number;
   variant_id: number;
+  /** Product and variant codes, carried through to the order. */
+  sku?: string;
+  variant_sku?: string;
   slug: string;
   name: string;
   image: string;
@@ -107,6 +132,8 @@ export type OrderItem = {
   name: string;
   slug: string;
   image: string;
+  sku: string;
+  variant_sku: string;
   size: string;
   color: string;
   quantity: number;
@@ -148,7 +175,19 @@ export type Order = {
 export type CheckoutPayload = {
   customer: Customer;
   shipping_address: ShippingAddress;
-  items: { product_id: number; variant_id: number; quantity: number; unit_price: number; name: string; size: string }[];
+  items: {
+    product_id: number;
+    variant_id: number;
+    quantity: number;
+    unit_price: number;
+    name: string;
+    size: string;
+    color?: string;
+    slug?: string;
+    image?: string;
+    sku?: string;
+    variant_sku?: string;
+  }[];
   payment_method: PaymentMethod;
   /** URL of the uploaded payment receipt/screenshot (required for non-COD). */
   payment_receipt?: string;

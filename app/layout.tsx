@@ -76,7 +76,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ToastProvider>
           <AuthHydrator />
           <AbandonedCartTracker />
-          <AnnouncementBar threshold={settings?.free_shipping_threshold} />
+          <AnnouncementBar
+            threshold={settings?.free_shipping_threshold}
+            freeShipping={(settings?.free_shipping_enabled ?? "1") !== "0"}
+          />
           <Header logoUrl={settings?.logo_url} categories={categories} />
           <main className="flex-1">{children}</main>
           <Footer />

@@ -13,7 +13,11 @@ export interface Settings {
   tiktok_url?: string;
   whatsapp_number?: string;
   shipping_fee?: string;
+  /** "0" switches the free-shipping offer off; anything else (or missing) = on. */
+  free_shipping_enabled?: string;
   free_shipping_threshold?: string;
+  /** Admin-written delivery policy: charges, timing, advance payment. One paragraph per line. */
+  delivery_policy?: string;
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;

@@ -10,6 +10,28 @@ import type { Category, Product } from "@/types";
  */
 
 export type Collection = "all" | "featured" | "best_seller" | "new";
+export type Sort = "newest" | "price_asc" | "price_desc";
+
+const COLLECTIONS: Collection[] = ["all", "featured", "best_seller", "new"];
+const SORTS: Sort[] = ["newest", "price_asc", "price_desc"];
+
+/** ?tab= value → collection, defaulting to "all". */
+export function parseCollection(raw: string | string[] | null | undefined): Collection {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  return COLLECTIONS.includes(v as Collection) ? (v as Collection) : "all";
+}
+
+/** ?sort= value → sort, defaulting to newest. */
+export function parseSort(raw: string | string[] | null | undefined): Sort {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  return SORTS.includes(v as Sort) ? (v as Sort) : "newest";
+}
+
+/** ?page= value → positive integer, defaulting to 1. */
+export function parsePage(raw: string | string[] | null | undefined): number {
+  const v = Number(Array.isArray(raw) ? raw[0] : raw);
+  return Number.isInteger(v) && v > 0 ? v : 1;
+}
 
 export const PER_PAGE = 12;
 /** Category selections merge several requests, so they pull a wider page each. */

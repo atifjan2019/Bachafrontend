@@ -7,8 +7,16 @@ export const metadata: Metadata = {
 
 import { PageHero } from "@/components/common/PageHero";
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants/contact";
+import { getSettings } from "@/lib/api/settings";
+import { deliveryPolicyParagraphs, shippingRule } from "@/lib/shipping";
+import { formatPKR } from "@/lib/utils/format";
 
-export default function TermsPage() {
+export const revalidate = 0;
+
+export default async function TermsPage() {
+  const settings = await getSettings().catch(() => null);
+  const shipping = shippingRule(settings);
+  const policy = deliveryPolicyParagraphs(settings);
   return (
     <div className="flex flex-col">
       <PageHero eyebrow="Legal" title="Terms & Conditions" subtitle="Last updated: April 2026" />
@@ -45,7 +53,13 @@ export default function TermsPage() {
         <h2>4. Shipping</h2>
         <ul>
           <li>We deliver nationwide across Pakistan within 2–5 working days.</li>
-          <li>Orders above Rs. 5,000 qualify for free shipping.</li>
+          <li>
+            Delivery charge {formatPKR(shipping.fee)}
+            {shipping.freeEnabled ? `; orders of ${formatPKR(shipping.threshold)} or more qualify for free shipping.` : " on every order."}
+          </li>
+          {policy.map((p, i) => (
+            <li key={i}>{p}</li>
+          ))}
           <li>Orders placed before 2 pm (PKT) on working days are dispatched the same day.</li>
           <li>
             Delivery timelines are estimates and may vary due to courier delays, public holidays, or

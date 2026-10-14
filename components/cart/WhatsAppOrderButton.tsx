@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/store/cart";
-import { getSettings } from "@/lib/api/settings";
+import { getSettings, type Settings } from "@/lib/api/settings";
 import { WhatsAppIcon } from "@/components/common/SocialIcons";
 import { buildWhatsAppOrderHref } from "@/lib/utils/whatsapp";
+import { shippingFor } from "@/lib/shipping";
 
 /**
  * "Order via WhatsApp" — bundles the whole cart into a pre-filled WhatsApp
@@ -17,25 +18,18 @@ export function WhatsAppOrderButton({ onClick }: { onClick?: () => void }) {
   const lines = useCart((s) => s.lines);
   const subtotal = useCart((s) => s.subtotal());
 
-  const [waNumber, setWaNumber] = useState<string | undefined>(undefined);
-  const [fee, setFee] = useState(250);
-  const [threshold, setThreshold] = useState(5000);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [origin, setOrigin] = useState("");
 
   useEffect(() => {
     setOrigin(window.location.origin);
-    getSettings()
-      .then((s) => {
-        if (s.whatsapp_number) setWaNumber(s.whatsapp_number);
-        if (s.shipping_fee) setFee(Number(s.shipping_fee));
-        if (s.free_shipping_threshold) setThreshold(Number(s.free_shipping_threshold));
-      })
-      .catch(() => {});
+    getSettings().then(setSettings).catch(() => {});
   }, []);
 
   if (lines.length === 0) return null;
 
-  const shipping = subtotal >= threshold ? 0 : fee;
+  const waNumber = settings?.whatsapp_number;
+  const shipping = shippingFor(subtotal, settings);
   const total = subtotal + shipping;
   const href = buildWhatsAppOrderHref({
     lines,

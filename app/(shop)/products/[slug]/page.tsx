@@ -6,12 +6,13 @@ import { stripHtml } from "@/lib/seo";
 import { getSettings } from "@/lib/api/settings";
 import { resolveWhatsApp } from "@/lib/constants/social";
 import { getReviews } from "@/lib/api/reviews";
-import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductGrid } from "@/components/product/ProductGrid";
+import { ProductDetailClient } from "./ProductDetailClient";
+import { deliveryPolicyParagraphs, shippingRule } from "@/lib/shipping";
+import { formatPKR } from "@/lib/utils/format";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { SizeGuide } from "@/components/product/SizeGuide";
 import { GoldDivider } from "@/components/common/GoldDivider";
-import { ProductDetailActions } from "./ProductDetailActions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 // Cache each product page for 5 minutes (ISR) so repeat views are served
@@ -28,10 +29,12 @@ export async function generateMetadata({
     const product = await getProduct(slug);
     if (!product) return { title: "Product not found", robots: { index: false, follow: false } };
 
-    // Product names already carry the brand suffix, so the layout template is
-    // bypassed rather than doubling it.
-    const title = product.name.trim();
+    // Admin-entered SEO fields win; otherwise the product name (which already
+    // carries the brand suffix, so the layout template is bypassed) and the
+    // start of the description.
+    const title = (product.meta_title ?? product.name).trim();
     const description =
+      product.meta_description ||
       stripHtml(product.description) ||
       `${product.name} from Bacha Stylo. Nationwide delivery, Cash on Delivery, JazzCash and Easypaisa.`;
     const image = product.images[0]?.url;
@@ -66,6 +69,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     getSettings().catch(() => null),
     getReviews(product.slug),
   ]);
+  const shipping = shippingRule(settings);
+  const policy = deliveryPolicyParagraphs(settings);
 
   return (
     <div className="container-shop py-6 lg:py-12">
@@ -79,15 +84,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <span className="text-brand-black">{product.name}</span>
       </nav>
 
-      <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
-        <ProductGallery images={product.images} name={product.name} />
-        <div>
-          <ProductDetailActions
-            product={product}
-            whatsappNumber={resolveWhatsApp(settings?.whatsapp_number).number}
-          />
+      <ProductDetailClient product={product} whatsappNumber={resolveWhatsApp(settings?.whatsapp_number).number} />
 
-          <div className="mt-8">
+      <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
+        <div className="hidden lg:block" />
+        <div>
+          <div className="mt-8 lg:mt-0">
             <Accordion type="single" collapsible defaultValue="desc">
               <AccordionItem value="desc">
                 <AccordionTrigger>Full Description</AccordionTrigger>
@@ -109,8 +111,16 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <AccordionItem value="delivery">
                 <AccordionTrigger>Delivery &amp; Returns</AccordionTrigger>
                 <AccordionContent>
-                  Delivery in 2 to 5 working days across Pakistan. Free shipping on orders above Rs. 5,000.
-                  Size exchanges accepted within 7 days of delivery, item must be unused with tags intact.
+                  <div className="space-y-2">
+                    <p>
+                      Delivery in 2 to 5 working days across Pakistan. Delivery charge {formatPKR(shipping.fee)}
+                      {shipping.freeEnabled ? `, free on orders of ${formatPKR(shipping.threshold)} or more.` : "."}
+                    </p>
+                    {policy.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                    <p>Size exchanges accepted within 7 days of delivery, item must be unused with tags intact.</p>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatPKR } from "@/lib/utils/format";
 import { Check, Package, Truck, Home } from "lucide-react";
+import { SafeImage } from "@/components/common/SafeImage";
 import { cn } from "@/lib/utils/cn";
 import type { Order, OrderStatus } from "@/types";
 
@@ -135,11 +136,20 @@ export default function OrderDetailPage() {
             {order.items.map((i, idx) => (
               <div key={idx} className="flex items-center justify-between py-3 gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-12 w-12 rounded-full bg-cream border border-border flex items-center justify-center text-gold">
-                    <Package className="h-5 w-5" />
-                  </div>
+                  {i.image ? (
+                    <div className="relative h-14 w-12 flex-shrink-0 overflow-hidden rounded-md border border-border bg-cream">
+                      <SafeImage src={i.image} alt={i.name} fallbackLabel={i.name} fill className="object-cover" sizes="48px" />
+                    </div>
+                  ) : (
+                    <div className="h-12 w-12 rounded-full bg-cream border border-border flex items-center justify-center text-gold">
+                      <Package className="h-5 w-5" />
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-brand-black truncate">{i.name}</p>
+                    {(i.variant_sku || i.sku) && (
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-ink-50">Code {i.variant_sku || i.sku}</p>
+                    )}
                     <p className="text-xs text-muted">
                       {i.size && (
                         <>

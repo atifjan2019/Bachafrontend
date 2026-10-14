@@ -2,23 +2,19 @@
 import { useEffect, useState } from "react";
 import { formatPKR } from "@/lib/utils/format";
 import { useCart } from "@/lib/store/cart";
-import { getSettings } from "@/lib/api/settings";
+import { getSettings, type Settings } from "@/lib/api/settings";
+import { remainingForFreeShipping, shippingFor } from "@/lib/shipping";
 
 export function CartSummary({ includeShipping = false }: { includeShipping?: boolean }) {
   const subtotal = useCart((s) => s.subtotal());
-  const [fee, setFee] = useState(250);
-  const [threshold, setThreshold] = useState(5000);
+  const [settings, setSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
-    getSettings()
-      .then((s) => {
-        if (s.shipping_fee) setFee(Number(s.shipping_fee));
-        if (s.free_shipping_threshold) setThreshold(Number(s.free_shipping_threshold));
-      })
-      .catch(() => {});
+    getSettings().then(setSettings).catch(() => {});
   }, []);
 
-  const shipping = subtotal === 0 ? 0 : subtotal >= threshold ? 0 : fee;
+  const shipping = shippingFor(subtotal, settings);
+  const remaining = remainingForFreeShipping(subtotal, settings);
   const total = includeShipping ? subtotal + shipping : subtotal;
 
   return (
@@ -38,9 +34,9 @@ export function CartSummary({ includeShipping = false }: { includeShipping?: boo
         <span className="font-display text-base">Total</span>
         <span className="font-display text-lg">{formatPKR(total)}</span>
       </div>
-      {subtotal > 0 && subtotal < threshold && (
+      {remaining !== null && (
         <p className="text-xs text-muted pt-1">
-          Add {formatPKR(threshold - subtotal)} more for free shipping.
+          Add {formatPKR(remaining)} more for free shipping.
         </p>
       )}
     </div>

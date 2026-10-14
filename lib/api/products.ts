@@ -1,6 +1,41 @@
 import { apiClient, USE_MOCKS, delay } from "./client";
 import { mockProducts } from "@/lib/mocks/products";
-import type { Product, ProductListParams, ProductListResponse } from "@/types";
+import type { Product, ProductColor, ProductListParams, ProductListResponse, Variant } from "@/types";
+
+/** Code fragment for a variant: letters and digits only, upper-case. */
+function codePart(value: string): string {
+  return value.replace(/[^A-Za-z0-9]+/g, "").toUpperCase();
+}
+
+/** Colour options as saved by the admin (array of {name, hex, image, price, stock, note}). */
+function adaptColors(raw: unknown): ProductColor[] {
+  let list: unknown = raw;
+  if (typeof raw === "string" && raw.trim()) {
+    try {
+      list = JSON.parse(raw);
+    } catch {
+      list = raw.split(",").map((n) => ({ name: n.trim() }));
+    }
+  }
+  if (!Array.isArray(list)) return [];
+  const out: ProductColor[] = [];
+  for (const row of list) {
+    const r = (typeof row === "string" ? { name: row } : row) as Record<string, unknown>;
+    const name = String(r?.name ?? "").trim();
+    if (!name) continue;
+    const price = Number(r.price);
+    const stock = r.stock === null || r.stock === undefined || r.stock === "" ? null : Number(r.stock);
+    out.push({
+      name,
+      hex: typeof r.hex === "string" && /^#?[0-9a-f]{6}$/i.test(r.hex) ? `#${r.hex.replace("#", "").toLowerCase()}` : null,
+      image: typeof r.image === "string" && r.image.trim() ? r.image.trim() : null,
+      price: Number.isFinite(price) && price > 0 ? price : null,
+      stock: stock !== null && Number.isFinite(stock) ? Math.max(0, stock) : null,
+      note: typeof r.note === "string" && r.note.trim() ? r.note.trim() : null,
+    });
+  }
+  return out;
+}
 
 /**
  * Adapt a raw product object from the Laravel backend
@@ -52,39 +87,51 @@ function adaptProduct(raw: Record<string, unknown>): Product {
     }
   }
 
-  // Synthesise variants from sizes (backend doesn't have variant model)
-  const variants = sizeList.map((size, i) => ({
-    id: Number(raw.id) * 100 + i,
-    size,
-    color: "Default",
-    color_hex: "#333333",
-    stock: 10, // assume in-stock since backend doesn't track per-variant stock
-    sku: `BSF-${raw.id}-${size}`,
-  }));
+  const id = Number(raw.id) || 0;
+  const sku = typeof raw.sku === "string" && raw.sku.trim() ? raw.sku.trim() : `BS-${String(id).padStart(5, "0")}`;
+  const colors = adaptColors(raw.colors);
 
-  // If no sizes, create a single "One Size" variant so the cart can still work
-  if (variants.length === 0) {
-    variants.push({
-      id: Number(raw.id) * 100,
-      size: "One Size",
-      color: "Default",
-      color_hex: "#333333",
-      stock: 10,
-      sku: `BSF-${raw.id}-OS`,
+  // Variants are every size × every colour. Without sizes there is one
+  // "One Size"; without colours there is one placeholder "Default" colour
+  // (hidden by the UI). Stock is per colour when the admin set it, otherwise
+  // the item is simply in stock: the backend holds no per-size counts.
+  const sizes = sizeList.length > 0 ? sizeList : ["One Size"];
+  const colorOptions: ProductColor[] =
+    colors.length > 0 ? colors : [{ name: "Default", hex: "#333333", image: null, price: null, stock: null, note: null }];
+  const variants: Variant[] = [];
+  colorOptions.forEach((c, ci) => {
+    sizes.forEach((size, si) => {
+      const isDefault = c.name === "Default" && colors.length === 0;
+      variants.push({
+        id: id * 10000 + ci * 100 + si,
+        size,
+        color: c.name,
+        color_hex: c.hex ?? "#333333",
+        stock: c.stock ?? 10,
+        sku: [sku, isDefault ? null : codePart(c.name), sizeList.length > 0 ? codePart(size) : null].filter(Boolean).join("-"),
+        price: c.price,
+        image: c.image,
+        note: c.note,
+      });
     });
-  }
+  });
 
   return {
-    id: Number(raw.id) || 0,
+    id,
     slug: String(raw.slug ?? ""),
+    sku,
     name: String(raw.name ?? ""),
     description: String(raw.description ?? ""),
+    meta_title: typeof raw.meta_title === "string" && raw.meta_title.trim() ? raw.meta_title.trim() : null,
+    meta_description:
+      typeof raw.meta_description === "string" && raw.meta_description.trim() ? raw.meta_description.trim() : null,
+    colors,
     price: originalPrice != null && originalPrice > price ? originalPrice : price,
     sale_price: originalPrice != null && originalPrice > price ? price : null,
     category: categoryObj,
     images,
     variants,
-    in_stock: true,
+    in_stock: variants.some((v) => v.stock > 0),
     low_stock_threshold: 3,
     created_at: String(raw.created_at ?? ""),
     is_new: Boolean(raw.is_new),

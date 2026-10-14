@@ -15,9 +15,12 @@ import type { Product } from "@/types";
 export function ProductDetailActions({
   product,
   whatsappNumber,
+  onColorChange,
 }: {
   product: Product;
   whatsappNumber?: string;
+  /** Lets the page show the chosen colour's photo in the gallery. */
+  onColorChange?: (color: string | null) => void;
 }) {
   const sizes = useMemo(() => uniqueSizes(product.variants), [product]);
   const colors = useMemo(() => uniqueColors(product.variants), [product]);
@@ -47,8 +50,13 @@ export function ProductDetailActions({
     setQty(1);
   }, [size, color]);
 
-  const onSale = product.sale_price !== null && product.sale_price < product.price;
-  const displayPrice = product.sale_price ?? product.price;
+  useEffect(() => {
+    onColorChange?.(showColors ? color : null);
+  }, [color, showColors, onColorChange]);
+
+  // A colour can carry its own price; otherwise the product's (sale) price.
+  const onSale = variant?.price == null && product.sale_price !== null && product.sale_price < product.price;
+  const displayPrice = variant?.price ?? product.sale_price ?? product.price;
   const stock = variant?.stock ?? 0;
   const status = stockStatus(stock, product.low_stock_threshold);
 
@@ -82,9 +90,11 @@ export function ProductDetailActions({
       id: `${product.id}-${variant.id}`,
       product_id: product.id,
       variant_id: variant.id,
+      sku: product.sku,
+      variant_sku: variant.sku,
       slug: product.slug,
       name: product.name,
-      image: product.images[0]?.url ?? "",
+      image: variant.image ?? product.images[0]?.url ?? "",
       size: variant.size,
       color: variant.color,
       color_hex: variant.color_hex,
@@ -92,7 +102,11 @@ export function ProductDetailActions({
       quantity: qty,
       max_stock: variant.stock,
     });
-    show({ title: "Added to cart", description: `${product.name} (${variant.size})`, tone: "success" });
+    show({
+      title: "Added to cart",
+      description: `${product.name} (${[variant.size, showColors ? variant.color : null].filter(Boolean).join(", ")})`,
+      tone: "success",
+    });
     openCart();
   }
 
@@ -110,6 +124,7 @@ export function ProductDetailActions({
         )}
       </div>
       <p className="mt-4 text-sm text-muted max-w-md">{product.description.replace(/<[^>]*>/g, '').slice(0, 140)}&hellip;</p>
+      <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-ink-50">Code: {variant?.sku ?? product.sku}</p>
 
       <div className="h-px bg-border my-6" />
 
@@ -126,6 +141,7 @@ export function ProductDetailActions({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Colour</span>
+              {variant?.note && <span className="text-xs text-muted">{variant.note}</span>}
             </div>
             <ColorSelector colors={colors} value={color} onChange={setColor} />
           </div>
