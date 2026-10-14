@@ -72,6 +72,11 @@ export const useCart = create<CartState>()(
       subtotal: () => get().lines.reduce((s, l) => s + l.unit_price * l.quantity, 0),
       itemCount: () => get().lines.reduce((s, l) => s + l.quantity, 0),
     }),
-    { name: "bsf_cart" }
+    {
+      name: "bsf_cart",
+      // Only the lines are worth remembering. Persisting isOpen meant the
+      // drawer re-opened on every page load after an add-to-cart.
+      partialize: (state) => ({ lines: state.lines }),
+    }
   )
 );
